@@ -1,0 +1,13 @@
+Open5GS daemon v2.7.6-201-gf7ec6ea
+
+[32m03/15 06:46:05.766[0m: [[33mapp[0m] [1;32mINFO[0m: Configuration: '/home/ubuntu/open5gs/install/etc/open5gs/upf.yaml' (../lib/app/ogs-init.c:144)
+[32m03/15 06:46:05.766[0m: [[33mapp[0m] [1;32mINFO[0m: File Logging: '/home/ubuntu/open5gs/install/var/log/open5gs/upf.log' (../lib/app/ogs-init.c:147)
+[32m03/15 06:46:05.892[0m: [[33mmetrics[0m] [1;32mINFO[0m: metrics_server() [http://127.0.0.7]:9090 (../lib/metrics/prometheus/context.c:392)
+[32m03/15 06:46:05.892[0m: [[33mpfcp[0m] [1;32mINFO[0m: pfcp_server() [127.0.0.7]:8805 (../lib/pfcp/path.c:30)
+[32m03/15 06:46:05.892[0m: [[33mgtp[0m] [1;32mINFO[0m: gtp_server() [127.0.0.7]:2152 (../lib/gtp/path.c:30)
+[32m03/15 06:46:05.892[0m: [[33mapp[0m] [1;32mINFO[0m: UPF initialize...done (../src/upf/app.c:31)
+[32m03/15 06:46:07.462[0m: [[33mupf[0m] [1;32mINFO[0m: PFCP associated [127.0.0.4]:8805 (../src/upf/pfcp-sm.c:168)
+[32m03/15 06:46:39.593[0m: [[33mapp[0m] [1;32mINFO[0m: SIGINT received (../src/main.c:54)
+[32m03/15 06:46:39.593[0m: [[33mapp[0m] [1;32mINFO[0m: Open5GS daemon terminating... (../src/main.c:231)
+[32m03/15 06:46:39.595[0m: [[33mupf[0m] [1;32mINFO[0m: PFCP de-associated [127.0.0.4]:8805 (../src/upf/pfcp-sm.c:184)
+[32m03/15 06:46:39.602[0m: [[33mapp[0m] [1;32mINFO[0m: UPF terminate...done (../src/upf/app.c:39)
