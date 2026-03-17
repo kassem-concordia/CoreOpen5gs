@@ -1,4 +1,4 @@
-/*
+    /*
  * Copyright (C) 2019-2025 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
@@ -510,8 +510,19 @@ bool pcf_sbi_send_smpolicycontrol_create_response(
         ogs_assert(QosData);
         ogs_assert(QosData->qos_id);
 
+        QosData->is_qnc = true;
+        QosData->qnc = 1; // kassem
+        ogs_assert(QosData);//kassem
+        
         QosDecisionMap = OpenAPI_map_create(QosData->qos_id, QosData);
         ogs_assert(QosDecisionMap);
+        
+        ogs_error("[QNC DEBUG] supi=%s psi=%d qos_id=%s is_qnc=%d qnc=%d",
+        pcf_ue_sm->supi,
+        sess->psi,
+        QosData->qos_id,
+        QosData->is_qnc,
+        QosData->qnc);
 
         OpenAPI_list_add(QosDecisionList, QosDecisionMap);
     }
