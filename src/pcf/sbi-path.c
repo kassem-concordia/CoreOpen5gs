@@ -486,7 +486,8 @@ bool pcf_sbi_send_smpolicycontrol_create_response(
 
     QosDecisionList = OpenAPI_list_create();
     ogs_assert(QosDecisionList);
-
+    ogs_warn("**************************************************************************************************************************************");
+    ogs_warn("[PCC DEBUG] Checking Rule ID: Num Flows: %d", session_data.num_of_pcc_rule);
     for (i = 0; i < session_data.num_of_pcc_rule; i++) {
         ogs_pcc_rule_t *pcc_rule = &session_data.pcc_rule[i];
 
@@ -495,6 +496,7 @@ bool pcf_sbi_send_smpolicycontrol_create_response(
 
         if (!pcc_rule->num_of_flow) {
             /* No Flow */
+            ogs_warn("FLOW **************************************************************************************************************************************");
             continue;
         }
 
