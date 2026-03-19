@@ -136,7 +136,6 @@ static int pcf_sbi_discover_and_send(
 {
     ogs_sbi_xact_t *xact = NULL;
     int r;
-
     ogs_assert(service_type);
     ogs_assert(sbi_object);
     ogs_assert(stream);
@@ -292,6 +291,7 @@ bool pcf_sbi_send_smpolicycontrol_create_response(
     char *strerror = NULL;
     pcf_ue_sm_t *pcf_ue_sm = NULL;
     ogs_sbi_server_t *server = NULL;
+    ogs_error(">>> *************************************************************************************** KASSEM ENTERED smpolicycontrol_create_response");
 
     ogs_sbi_message_t sendmsg;
     ogs_sbi_header_t header;
@@ -496,10 +496,10 @@ bool pcf_sbi_send_smpolicycontrol_create_response(
 
         if (!pcc_rule->num_of_flow) {
             /* No Flow */
-            ogs_warn("FLOW **************************************************************************************************************************************");
+            ogs_warn("FLOW = 0  **************************************************************************************************************************************");
             continue;
         }
-
+        
         PccRule = ogs_sbi_build_pcc_rule(pcc_rule, 1);
         ogs_assert(PccRule->pcc_rule_id);
 
@@ -518,7 +518,7 @@ bool pcf_sbi_send_smpolicycontrol_create_response(
         
         QosDecisionMap = OpenAPI_map_create(QosData->qos_id, QosData);
         ogs_assert(QosDecisionMap);
-        
+        ogs_warn("QNC AHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH **************************************************************************************************************************************");
         ogs_error("[QNC DEBUG] supi=%s psi=%d qos_id=%s is_qnc=%d qnc=%d",
         pcf_ue_sm->supi,
         sess->psi,
