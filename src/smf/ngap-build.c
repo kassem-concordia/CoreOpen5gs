@@ -25,7 +25,7 @@
 static void fill_qos_level_parameters(
     NGAP_QosFlowLevelQosParameters_t *params,
     const ogs_qos_t *qos,
-    bool include_gbr)
+    bool include_gbr) //kassem
 {
     NGAP_AllocationAndRetentionPriority_t
         *allocationAndRetentionPriority = NULL;
@@ -74,6 +74,19 @@ static void fill_qos_level_parameters(
                 guaranteedFlowBitRateDL, qos->gbr.downlink);
         asn_uint642INTEGER(&gBR_QosInformation->
                 guaranteedFlowBitRateUL, qos->gbr.uplink);
+
+        //kassem
+        if (qos->qnc) {
+            gBR_QosInformation->notificationControl =
+                CALLOC(1, sizeof(NGAP_NotificationControl_t));
+            ogs_assert(gBR_QosInformation->notificationControl);
+
+            *(gBR_QosInformation->notificationControl) =
+                NGAP_NotificationControl_requested;
+
+            ogs_warn("*********************************[NGAP QNC] NotificationControl=requested added to QoS flow");
+        } //kassem
+
     } else if (include_gbr &&
                (qos->mbr.downlink || qos->mbr.uplink ||
                 qos->gbr.downlink || qos->gbr.uplink)) {
@@ -84,6 +97,7 @@ static void fill_qos_level_parameters(
         ogs_error("    GBR[DL:%lld,UL:%lld]",
             (long long)qos->gbr.downlink, (long long)qos->gbr.uplink);
     }
+    
 }
 
 ogs_pkbuf_t *ngap_build_pdu_session_resource_setup_request_transfer(

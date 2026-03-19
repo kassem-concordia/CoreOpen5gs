@@ -496,6 +496,7 @@ typedef struct ogs_qos_s {
 
     ogs_bitrate_t   mbr;  /* Maxmimum Bit Rate (MBR) */
     ogs_bitrate_t   gbr;  /* Guaranteed Bit Rate (GBR) */
+    bool qnc; // kassem
 } ogs_qos_t;
 
 int ogs_check_qos_conf(ogs_qos_t *qos);
