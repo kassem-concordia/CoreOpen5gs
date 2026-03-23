@@ -25,7 +25,7 @@
 static void fill_qos_level_parameters(
     NGAP_QosFlowLevelQosParameters_t *params,
     const ogs_qos_t *qos,
-    bool include_gbr) //kassem
+    bool include_gbr) 
 {
     NGAP_AllocationAndRetentionPriority_t
         *allocationAndRetentionPriority = NULL;
@@ -82,7 +82,7 @@ static void fill_qos_level_parameters(
             ogs_assert(gBR_QosInformation->notificationControl);
 
             *(gBR_QosInformation->notificationControl) =
-                NGAP_NotificationControl_requested;
+                NGAP_NotificationControl_notification_requested;
 
             ogs_warn("*********************************[NGAP QNC] NotificationControl=requested added to QoS flow");
         } //kassem
