@@ -256,7 +256,7 @@ static void update_authorized_pcc_rule_and_qos(
                     ogs_sbi_bitrate_from_string(QosData->gbr_dl);
 
             if (QosData->is_qnc)
-                pcc_rule->qos.qnc = pcc_rule->qos.qnc = QosData->qnc ? true : false; //kassem
+                pcc_rule->qos.qnc = QosData->qnc ? true : false; //kassem
 
             if (pcc_rule->qos.mbr.downlink || pcc_rule->qos.mbr.uplink ||
                 pcc_rule->qos.gbr.downlink || pcc_rule->qos.gbr.uplink) {
@@ -273,9 +273,7 @@ static void update_authorized_pcc_rule_and_qos(
                     pcc_rule->qos.gbr.uplink > OGS_MAX_BITRATE_NGAP)
                     pcc_rule->qos.gbr.uplink = OGS_MAX_BITRATE_NGAP;
             }
-            ogs_warn("****************[SMF QNC] supi=%s qos_id=%s is_qnc=%d  received qnc=%d stored=%d",
-                        smf_ue->supi,
-                        QosData->qos_id,
+            ogs_warn("*************************[SMF QNC] is_qnc=%d  received qnc=%d stored=%d",
                         QosData->is_qnc,
                         QosData->qnc,
                         pcc_rule->qos.qnc); //kassem

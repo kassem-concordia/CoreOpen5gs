@@ -525,7 +525,7 @@ bool pcf_sbi_send_smpolicycontrol_create_response(
         QosData->qos_id,
         QosData->is_qnc,
         QosData->qnc);
-        ogs_error("**************************************************************** \n QoS decission map: %s", QosDecisionMap)
+        
 
         OpenAPI_list_add(QosDecisionList, QosDecisionMap);
     }
