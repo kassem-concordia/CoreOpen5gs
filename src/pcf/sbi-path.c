@@ -518,6 +518,7 @@ bool pcf_sbi_send_smpolicycontrol_create_response(
         
         QosDecisionMap = OpenAPI_map_create(QosData->qos_id, QosData);
         ogs_assert(QosDecisionMap);
+
         ogs_warn("QNC AHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH **************************************************************************************************************************************");
         ogs_error("[QNC DEBUG] supi=%s psi=%d qos_id=%s is_qnc=%d qnc=%d",
         pcf_ue_sm->supi,
@@ -525,9 +526,39 @@ bool pcf_sbi_send_smpolicycontrol_create_response(
         QosData->qos_id,
         QosData->is_qnc,
         QosData->qnc);
-        
 
         OpenAPI_list_add(QosDecisionList, QosDecisionMap);
+        //kassem
+        OpenAPI_list_t *AltQosProfileList = OpenAPI_list_create();
+        ogs_assert(AltQosProfileList);
+        // ALT 1
+        OpenAPI_qos_data_t *alt1 = ogs_sbi_build_qos_data(pcc_rule);
+        ogs_assert(alt1);
+
+        alt1->qos_id = ogs_strdup("alt_qos_1");
+        alt1->gbr_dl = ogs_sbi_bitrate_to_string(
+            pcc_rule->qos.gbr.downlink / 2, OGS_SBI_BITRATE_KBPS);
+        alt1->gbr_ul = ogs_sbi_bitrate_to_string(
+            pcc_rule->qos.gbr.uplink / 2, OGS_SBI_BITRATE_KBPS);
+
+        OpenAPI_map_t *AltMap1 = OpenAPI_map_create(alt1->qos_id, alt1);
+        OpenAPI_list_add(AltQosProfileList, AltMap1);
+
+
+        // ALT 2
+        OpenAPI_qos_data_t *alt2 = ogs_sbi_build_qos_data(pcc_rule);
+        ogs_assert(alt2);
+        alt2->qos_id = ogs_strdup("alt_qos_2");
+        alt2->gbr_dl = ogs_sbi_bitrate_to_string(
+            pcc_rule->qos.gbr.downlink / 4, OGS_SBI_BITRATE_KBPS);
+        alt2->gbr_ul = ogs_sbi_bitrate_to_string(
+            pcc_rule->qos.gbr.uplink / 4, OGS_SBI_BITRATE_KBPS);
+
+        OpenAPI_map_t *AltMap2 = OpenAPI_map_create(alt2->qos_id, alt2);
+        OpenAPI_list_add(AltQosProfileList, AltMap2);
+        //kassem
+        pcc_rule->alt_qos_profiles = AltQosProfileList;
+        
     }
 
     if (PccRuleList->count)
@@ -544,6 +575,8 @@ bool pcf_sbi_send_smpolicycontrol_create_response(
     if (sess->smpolicycontrol_features) {
         SmPolicyDecision.supp_feat =
             ogs_uint64_to_string(sess->smpolicycontrol_features);
+
+
         ogs_assert(SmPolicyDecision.supp_feat);
     }
 

@@ -25,7 +25,7 @@
 static void fill_qos_level_parameters(
     NGAP_QosFlowLevelQosParameters_t *params,
     const ogs_qos_t *qos,
-    bool include_gbr) //kassem
+    bool include_gbr) 
 {
     NGAP_AllocationAndRetentionPriority_t
         *allocationAndRetentionPriority = NULL;
@@ -52,7 +52,13 @@ static void fill_qos_level_parameters(
     qosCharacteristics->present = NGAP_QosCharacteristics_PR_nonDynamic5QI;
 
     nonDynamic5QI->fiveQI = qos->index;
-
+    ogs_warn("******************************************************[GBR CHECK] include_gbr=%d mbr_dl=%lld mbr_ul=%lld gbr_dl=%lld gbr_ul=%lld qnc=%d",
+            include_gbr,
+            (long long)qos->mbr.downlink,
+            (long long)qos->mbr.uplink,
+            (long long)qos->gbr.downlink,
+            (long long)qos->gbr.uplink,
+            qos->qnc);
     /* Optional GBR/MBR Information */
     if (include_gbr &&
         qos->mbr.downlink && qos->mbr.uplink &&
@@ -76,13 +82,7 @@ static void fill_qos_level_parameters(
                 guaranteedFlowBitRateUL, qos->gbr.uplink);
 
         //kassem
-        ogs_warn("******************************************************[GBR CHECK] include_gbr=%d mbr_dl=%lld mbr_ul=%lld gbr_dl=%lld gbr_ul=%lld qnc=%d",
-            include_gbr,
-            (long long)qos->mbr.downlink,
-            (long long)qos->mbr.uplink,
-            (long long)qos->gbr.downlink,
-            (long long)qos->gbr.uplink,
-            qos->qnc);
+        
         if (qos->qnc) {
             gBR_QosInformation->notificationControl =
                 CALLOC(1, sizeof(NGAP_NotificationControl_t));

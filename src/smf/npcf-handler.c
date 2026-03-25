@@ -273,7 +273,8 @@ static void update_authorized_pcc_rule_and_qos(
                     pcc_rule->qos.gbr.uplink > OGS_MAX_BITRATE_NGAP)
                     pcc_rule->qos.gbr.uplink = OGS_MAX_BITRATE_NGAP;
             }
-            ogs_warn("*************************[SMF QNC] is_qnc=%d  received qnc=%d stored=%d",
+            ogs_warn("****************[SMF QNC] qos_id=%s is_qnc=%d  received qnc=%d stored=%d",
+                        QosData->qos_id,
                         QosData->is_qnc,
                         QosData->qnc,
                         pcc_rule->qos.qnc); //kassem
