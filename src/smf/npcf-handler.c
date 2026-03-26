@@ -138,7 +138,10 @@ static void update_authorized_pcc_rule_and_qos(
                 ogs_error("no QosId");
                 continue;
             }
+            if(PccRule->ref_alt_qos_params){
+                ogs_warn("*****************************************************ALT QoS parameters are included in the policy decision!*****************************************************");
 
+            }
             if (SmPolicyDecision->qos_decs) {
                 OpenAPI_map_t *QosDecisionMap = NULL;
                 OpenAPI_qos_data_t *QosDataIter = NULL;
@@ -278,6 +281,7 @@ static void update_authorized_pcc_rule_and_qos(
                         QosData->is_qnc,
                         QosData->qnc,
                         pcc_rule->qos.qnc); //kassem
+            
             sess->policy.num_of_pcc_rule++;
         }
     }
