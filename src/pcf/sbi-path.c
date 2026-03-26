@@ -542,9 +542,8 @@ bool pcf_sbi_send_smpolicycontrol_create_response(
             pcc_rule->qos.gbr.uplink / 2, OGS_SBI_BITRATE_KBPS);
 
         OpenAPI_map_t *AltMap1 = OpenAPI_map_create(alt1->qos_id, alt1);
-        OpenAPI_list_add(AltQosProfileList, AltMap1);
-
-
+        OpenAPI_list_add(QosDecisionList, AltMap1);
+        OpenAPI_list_add(AltQosRefList, alt1->qos_id);
         // ALT 2
         OpenAPI_qos_data_t *alt2 = ogs_sbi_build_qos_data(pcc_rule);
         ogs_assert(alt2);
@@ -554,10 +553,14 @@ bool pcf_sbi_send_smpolicycontrol_create_response(
         alt2->gbr_ul = ogs_sbi_bitrate_to_string(
             pcc_rule->qos.gbr.uplink / 4, OGS_SBI_BITRATE_KBPS);
 
+        // Add ALT2 to QoS Decision map
         OpenAPI_map_t *AltMap2 = OpenAPI_map_create(alt2->qos_id, alt2);
-        OpenAPI_list_add(AltQosProfileList, AltMap2);
+        OpenAPI_list_add(QosDecisionList, AltMap2);
+
+        // Add reference ID
+        OpenAPI_list_add(AltQosRefList, alt2->qos_id);\ 
+        PccRule->ref_alt_qos_params = AltQosProfileList;
         //kassem
-        pcc_rule->alt_qos_profiles = AltQosProfileList;
         
     }
 
