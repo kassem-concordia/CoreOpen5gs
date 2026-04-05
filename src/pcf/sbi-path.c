@@ -530,40 +530,40 @@ bool pcf_sbi_send_smpolicycontrol_create_response(
         OpenAPI_list_add(QosDecisionList, QosDecisionMap);
         //kassem
         OpenAPI_list_t *AltQosRefList = OpenAPI_list_create();
-ogs_assert(AltQosRefList);
+        ogs_assert(AltQosRefList);
 
-// ALT 1
-OpenAPI_qos_data_t *alt1 = ogs_sbi_build_qos_data(pcc_rule);
-ogs_assert(alt1);
-
-alt1->qos_id = ogs_strdup("alt_qos_1");
-alt1->gbr_dl = ogs_sbi_bitrate_to_string(
-    pcc_rule->qos.gbr.downlink / 2, OGS_SBI_BITRATE_KBPS);
-alt1->gbr_ul = ogs_sbi_bitrate_to_string(
-    pcc_rule->qos.gbr.uplink / 2, OGS_SBI_BITRATE_KBPS);
-
-OpenAPI_map_t *AltMap1 = OpenAPI_map_create(alt1->qos_id, alt1);
-OpenAPI_list_add(QosDecisionList, AltMap1);
-OpenAPI_list_add(AltQosRefList, alt1->qos_id);
-
-
-// ALT 2
-OpenAPI_qos_data_t *alt2 = ogs_sbi_build_qos_data(pcc_rule);
-ogs_assert(alt2);
-
-alt2->qos_id = ogs_strdup("alt_qos_2");
-alt2->gbr_dl = ogs_sbi_bitrate_to_string(
-    pcc_rule->qos.gbr.downlink / 4, OGS_SBI_BITRATE_KBPS);
-alt2->gbr_ul = ogs_sbi_bitrate_to_string(
-    pcc_rule->qos.gbr.uplink / 4, OGS_SBI_BITRATE_KBPS);
-
-OpenAPI_map_t *AltMap2 = OpenAPI_map_create(alt2->qos_id, alt2);
-OpenAPI_list_add(QosDecisionList, AltMap2);
-OpenAPI_list_add(AltQosRefList, alt2->qos_id);
+        // ALT 1 for now, I just changed the bitrate values
+        OpenAPI_qos_data_t *alt1 = ogs_sbi_build_qos_data(pcc_rule);
+        ogs_assert(alt1);
+        OGS_ASSERT(alt1->qos_id);
+        alt1->gbr_dl = ogs_sbi_bitrate_to_string(
+            pcc_rule->qos.gbr.downlink / 2, OGS_SBI_BITRATE_KBPS);
+        alt1->gbr_ul = ogs_sbi_bitrate_to_string(
+            pcc_rule->qos.gbr.uplink / 2, OGS_SBI_BITRATE_KBPS);
+        alt1->is_qnc = true;
+        alt1->qnc = 1; 
+        OpenAPI_map_t *AltMap1 = OpenAPI_map_create(alt1->qos_id, alt1);
+        ogs_assert(AltMap1);
+        OpenAPI_list_add(QosDecisionList, AltMap1);
+        OpenAPI_list_add(AltQosRefList, alt1->qos_id);
 
 
-// attach references
-PccRule->ref_alt_qos_params = AltQosRefList;
+        // ALT 2
+        OpenAPI_qos_data_t *alt2 = ogs_sbi_build_qos_data(pcc_rule);
+        ogs_assert(alt2);
+        alt2->gbr_dl = ogs_sbi_bitrate_to_string(
+        pcc_rule->qos.gbr.downlink / 4, OGS_SBI_BITRATE_KBPS);
+        alt2->gbr_ul = ogs_sbi_bitrate_to_string(
+        pcc_rule->qos.gbr.uplink / 4, OGS_SBI_BITRATE_KBPS);
+        alt2->is_qnc = true;
+        alt2->qnc = 1;
+        OpenAPI_map_t *AltMap2 = OpenAPI_map_create(alt2->qos_id, alt2);
+        ogs_assert(AltMap2);
+        OpenAPI_list_add(QosDecisionList, AltMap2);
+        OpenAPI_list_add(AltQosRefList, alt2->qos_id);
+
+        // attach references
+        PccRule->ref_alt_qos_params = AltQosRefList;
         //kassem
         
     }

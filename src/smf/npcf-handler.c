@@ -138,10 +138,7 @@ static void update_authorized_pcc_rule_and_qos(
                 ogs_error("no QosId");
                 continue;
             }
-            if(PccRule->ref_alt_qos_params){
-                ogs_warn("*****************************************************ALT QoS parameters are included in the policy decision!*****************************************************");
-
-            }
+            
             if (SmPolicyDecision->qos_decs) {
                 OpenAPI_map_t *QosDecisionMap = NULL;
                 OpenAPI_qos_data_t *QosDataIter = NULL;
@@ -171,17 +168,54 @@ static void update_authorized_pcc_rule_and_qos(
                     }
                 }
             }
+            if(PccRule->ref_alt_qos_params){ //kassem
+                ogs_warn("*****************************************************ALT QoS parameters are included in the policy decision!
+                    *****************************************************");
+                OpenAPI_map_t *AltQosMap = NULL;
+                OpenAPI_alt_qos_profile_t *AltQosProfileIter = NULL;
+                int kassem_i = 0;
+                OpenAPI_list_for_each(SmPolicyDecision->qos_decs, node2) {
+                    if (kassem_i == 0 )
+                    {
+                        kassem_i++;
+                        continue; // skip the first iteration since it is the main QoS data
+                    }
+                    
+                    AltQosMap = node2->data;
+                    if (!AltQosMap) {
+                        ogs_error("No AltQosMap");
+                        continue;
+                    }
+
+                    AltQosProfileIter = AltQosMap->value;
+                    if (!AltQosProfileIter) {
+                        ogs_error("No AltQosProfile");
+                        continue;
+                    }
+
+                    if (!AltQosProfileIter->alt_qos_id) {
+                        ogs_error("No AltQosId");
+                        continue;
+
+                    }
+
+                    if (strcmp(PccRule->ref_alt_qos_params->first->data, AltQosProfileIter->alt_qos_id) == 0) {
+                        pcc_rule->num_of_alt_qos_profile = 1;
+                        memcpy(&pcc_rule->alt_qos_profile[0], AltQosProfileIter, sizeof(OpenAPI_alt_qos_profile_t));
+                        break;
+                    }
+                }
+                
+            }   
 
             if (!QosData) {
                 ogs_error("no qosData");
                 continue;
             }
-
             pcc_rule->type = OGS_PCC_RULE_TYPE_INSTALL;
             pcc_rule->id = ogs_strdup(PccRule->pcc_rule_id);
             ogs_assert(pcc_rule->id);
             pcc_rule->precedence = PccRule->precedence;
-
             if (PccRule->flow_infos) {
                 ogs_assert(pcc_rule->num_of_flow == 0);
                 OpenAPI_list_for_each(PccRule->flow_infos, node2) {

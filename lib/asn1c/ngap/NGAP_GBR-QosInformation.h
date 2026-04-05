@@ -16,6 +16,7 @@
 #include "NGAP_NotificationControl.h"
 #include "NGAP_PacketLossRate.h"
 #include <constr_SEQUENCE.h>
+#include "NGAP_AlternativeQoSParaSetList.h" //kassem
 
 #ifdef __cplusplus
 extern "C" {
@@ -33,6 +34,7 @@ typedef struct NGAP_GBR_QosInformation {
 	NGAP_NotificationControl_t	*notificationControl;	/* OPTIONAL */
 	NGAP_PacketLossRate_t	*maximumPacketLossRateDL;	/* OPTIONAL */
 	NGAP_PacketLossRate_t	*maximumPacketLossRateUL;	/* OPTIONAL */
+	NGAP_AlternativeQoSParaSetList_t *alternativeQoSParaSetList;	//kassem
 	struct NGAP_ProtocolExtensionContainer	*iE_Extensions;	/* OPTIONAL */
 	/*
 	 * This type is extensible,

@@ -458,6 +458,13 @@ int ogs_check_br_conf(ogs_bitrate_t *br);
 
 /**********************************
  * QoS Structure                 */
+//kassem
+typedef struct ogs_alt_qos_profile_s {
+    uint8_t       index;    /* altQosParaSetIndex (1..255), sent to gNB via NGAP */
+    ogs_bitrate_t gbr;      /* guaranteed bit rate DL/UL */
+    ogs_bitrate_t mbr;      /* max bit rate DL/UL */
+} ogs_alt_qos_profile_t; //kassem 
+
 typedef struct ogs_qos_s {
 #define OGS_QOS_INDEX_1                                       1
 #define OGS_QOS_INDEX_2                                       2
@@ -572,6 +579,8 @@ typedef struct ogs_pcc_rule_s {
     uint32_t rating_group;
 
     ogs_qos_t  qos;
+    ogs_alt_qos_profile_t alt_qos_profile[8]; //kassem
+    int num_of_alt_qos_profile; //kassem
 } ogs_pcc_rule_t;
 
 #define OGS_STORE_PCC_RULE(__dST, __sRC) \
@@ -600,6 +609,8 @@ typedef struct ogs_pcc_rule_s {
         (__dST)->flow_status = (__sRC)->flow_status; \
         (__dST)->precedence = (__sRC)->precedence; \
         memcpy(&(__dST)->qos, &(__sRC)->qos, sizeof(ogs_qos_t)); \
+        memcpy(&(__dST)->alt_qos_profile,&(__sRC)->alt_qos_profile,sizeof(ogs_alt_qos_profile_t)*(__sRC)->num_of_alt_qos_profile); \ //kassem
+            (__dST)->num_of_alt_qos_profile = (__sRC)->num_of_alt_qos_profile; \ //kassem 
     } while(0)
 
 #define OGS_PCC_RULE_FREE(__pCCrULE) \
