@@ -609,8 +609,9 @@ typedef struct ogs_pcc_rule_s {
         (__dST)->flow_status = (__sRC)->flow_status; \
         (__dST)->precedence = (__sRC)->precedence; \
         memcpy(&(__dST)->qos, &(__sRC)->qos, sizeof(ogs_qos_t)); \
-        memcpy(&(__dST)->alt_qos_profile,&(__sRC)->alt_qos_profile,sizeof(ogs_alt_qos_profile_t)*(__sRC)->num_of_alt_qos_profile); \ //kassem
-        (__dST)->num_of_alt_qos_profile = (__sRC)->num_of_alt_qos_profile; \ //kassem 
+        memcpy((__dST)->alt_qos_profile, (__sRC)->alt_qos_profile, \
+            sizeof(ogs_alt_qos_profile_t) * (__sRC)->num_of_alt_qos_profile); \
+        (__dST)->num_of_alt_qos_profile = (__sRC)->num_of_alt_qos_profile; \
     } while(0)
 
 #define OGS_PCC_RULE_FREE(__pCCrULE) \
