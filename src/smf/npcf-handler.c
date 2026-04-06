@@ -169,9 +169,10 @@ static void update_authorized_pcc_rule_and_qos(
                 }
             }
             if(PccRule->ref_alt_qos_params){ //kassem
-                ogs_warn("*****************************************************ALT QoS parameters are included in the policy decision *****************************************************");
+                /*
+                //ogs_warn("*****************************************************ALT QoS parameters are included in the policy decision *****************************************************");
                 // OpenAPI_map_t *AltQosMap = NULL;
-                // OpenAPI_alt_qos_profile_t *AltQosProfileIter = NULL;
+                // OpenAPI_qos_flow_profile_t *AltQosProfileIter = NULL;
                 // OpenAPI_lnode_t *alt_node = NULL;
                 // int kassem_i = 0;
                 // OpenAPI_list_for_each(SmPolicyDecision->qos_decs, alt_node) {
@@ -203,7 +204,7 @@ static void update_authorized_pcc_rule_and_qos(
                 //     pcc_rule->num_of_alt_qos_profile++;
                 //     pcc_rule->alt_qos_profile[kassem_i].gbr = ogs_sbi_bitrate_from_string(AltQosProfileIter->gbr);
                 //     pcc_rule->alt_qos_profile[kassem_i].mbr = ogs_sbi_bitrate_from_string(AltQosProfileIter->mbr);
-                // }
+                // }*/
                 OpenAPI_lnode_t *alt_node = NULL;
     int alt_index = 1;
 
