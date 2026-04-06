@@ -535,7 +535,7 @@ bool pcf_sbi_send_smpolicycontrol_create_response(
         // ALT 1 for now, I just changed the bitrate values
         OpenAPI_qos_data_t *alt1 = ogs_sbi_build_qos_data(pcc_rule);
         ogs_assert(alt1);
-        OGS_ASSERT(alt1->qos_id);
+        ogs_assert(alt1->qos_id);
         alt1->gbr_dl = ogs_sbi_bitrate_to_string(
             pcc_rule->qos.gbr.downlink / 2, OGS_SBI_BITRATE_KBPS);
         alt1->gbr_ul = ogs_sbi_bitrate_to_string(
