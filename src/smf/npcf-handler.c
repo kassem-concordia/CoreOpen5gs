@@ -180,7 +180,7 @@ static void update_authorized_pcc_rule_and_qos(
                         kassem_i++;
                         continue; // skip the first iteration since it is the main QoS data
                     }
-                    
+                    kassem_i++;
                     AltQosMap = node2->data;
                     if (!AltQosMap) {
                         ogs_error("No AltQosMap");
@@ -199,11 +199,10 @@ static void update_authorized_pcc_rule_and_qos(
 
                     }
 
-                    if (strcmp(PccRule->ref_alt_qos_params->first->data, AltQosProfileIter->alt_qos_id) == 0) {
-                        pcc_rule->num_of_alt_qos_profile = 1;
-                        memcpy(&pcc_rule->alt_qos_profile[0], AltQosProfileIter, sizeof(OpenAPI_alt_qos_profile_t));
-                        break;
-                    }
+                    
+                    pcc_rule->num_of_alt_qos_profile++;
+                    pcc_rule->alt_qos_profile[kassem_i].gbr = ogs_sbi_bitrate_from_string(AltQosProfileIter->gbr);
+                    pcc_rule->alt_qos_profile[kassem_i].mbr = ogs_sbi_bitrate_from_string(AltQosProfileIter->mbr);
                 }
                 
             }   
