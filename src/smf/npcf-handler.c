@@ -170,40 +170,122 @@ static void update_authorized_pcc_rule_and_qos(
             }
             if(PccRule->ref_alt_qos_params){ //kassem
                 ogs_warn("*****************************************************ALT QoS parameters are included in the policy decision *****************************************************");
-                OpenAPI_map_t *AltQosMap = NULL;
-                OpenAPI_alt_qos_profile_t *AltQosProfileIter = NULL;
-                int kassem_i = 0;
-                OpenAPI_list_for_each(SmPolicyDecision->qos_decs, node2) {
-                    if (kassem_i == 0 )
-                    {
-                        kassem_i++;
-                        continue; // skip the first iteration since it is the main QoS data
-                    }
-                    kassem_i++;
-                    AltQosMap = node2->data;
-                    if (!AltQosMap) {
-                        ogs_error("No AltQosMap");
-                        continue;
-                    }
+                // OpenAPI_map_t *AltQosMap = NULL;
+                // OpenAPI_alt_qos_profile_t *AltQosProfileIter = NULL;
+                // OpenAPI_lnode_t *alt_node = NULL;
+                // int kassem_i = 0;
+                // OpenAPI_list_for_each(SmPolicyDecision->qos_decs, alt_node) {
+                //     if (kassem_i == 0 )
+                //     {
+                //         kassem_i++;
+                //         continue; // skip the first iteration since it is the main QoS data
+                //     }
+                //     kassem_i++;
+                //     AltQosMap = node2->data;
+                //     if (!AltQosMap) {
+                //         ogs_error("No AltQosMap");
+                //         continue;
+                //     }
 
-                    AltQosProfileIter = AltQosMap->value;
-                    if (!AltQosProfileIter) {
-                        ogs_error("No AltQosProfile");
-                        continue;
-                    }
+                //     AltQosProfileIter = AltQosMap->value;
+                //     if (!AltQosProfileIter) {
+                //         ogs_error("No AltQosProfile");
+                //         continue;
+                //     }
 
-                    if (!AltQosProfileIter->alt_qos_id) {
-                        ogs_error("No AltQosId");
-                        continue;
+                //     if (!AltQosProfileIter->alt_qos_id) {
+                //         ogs_error("No AltQosId");
+                //         continue;
 
-                    }
+                //     }
 
                     
-                    pcc_rule->num_of_alt_qos_profile++;
-                    pcc_rule->alt_qos_profile[kassem_i].gbr = ogs_sbi_bitrate_from_string(AltQosProfileIter->gbr);
-                    pcc_rule->alt_qos_profile[kassem_i].mbr = ogs_sbi_bitrate_from_string(AltQosProfileIter->mbr);
+                //     pcc_rule->num_of_alt_qos_profile++;
+                //     pcc_rule->alt_qos_profile[kassem_i].gbr = ogs_sbi_bitrate_from_string(AltQosProfileIter->gbr);
+                //     pcc_rule->alt_qos_profile[kassem_i].mbr = ogs_sbi_bitrate_from_string(AltQosProfileIter->mbr);
+                // }
+                OpenAPI_lnode_t *alt_node = NULL;
+    int alt_index = 1;
+
+    OpenAPI_list_for_each(PccRule->ref_alt_qos_params, alt_node) {
+        char *AltQosId = NULL;
+        OpenAPI_qos_data_t *AltQosData = NULL;
+        OpenAPI_lnode_t *qd_node = NULL;
+        ogs_alt_qos_profile_t *alt = NULL;
+
+        AltQosId = alt_node->data;
+        if (!AltQosId) {
+            ogs_error("Empty alt QoS ID, skipping");
+            continue;
+        }
+
+        /* Look up this alt QoS ID in qos_decs — same map,
+         * different key from the primary QosId */
+        if (SmPolicyDecision->qos_decs) {
+            OpenAPI_map_t *AltQosDecMap = NULL;
+            OpenAPI_qos_data_t *QosDataIter = NULL;
+
+            OpenAPI_list_for_each(SmPolicyDecision->qos_decs, qd_node) {
+                AltQosDecMap = qd_node->data;
+                if (!AltQosDecMap) continue;
+
+                QosDataIter = AltQosDecMap->value;
+                if (!QosDataIter || !QosDataIter->qos_id) continue;
+
+                if (strcmp(AltQosId, QosDataIter->qos_id) == 0) {
+                    AltQosData = QosDataIter;
+                    break;
                 }
-                
+            }
+        }
+
+        if (!AltQosData) {
+            ogs_error("No QosData found for alt_qos_id [%s]", AltQosId);
+            continue;
+        }
+
+        if (pcc_rule->num_of_alt_qos_profile >= OGS_MAX_NUM_OF_ALT_QOS_PROFILE) {
+            ogs_error("Reached max alt QoS profiles (%d), skipping [%s]",
+                      OGS_MAX_NUM_OF_ALT_QOS_PROFILE, AltQosId);
+            break;
+        }
+
+        alt = &pcc_rule->alt_qos_profile[pcc_rule->num_of_alt_qos_profile];
+        alt->index = alt_index++;
+
+        if (AltQosData->gbr_ul)
+            alt->gbr.uplink =
+                ogs_sbi_bitrate_from_string(AltQosData->gbr_ul);
+        if (AltQosData->gbr_dl)
+            alt->gbr.downlink =
+                ogs_sbi_bitrate_from_string(AltQosData->gbr_dl);
+        if (AltQosData->maxbr_ul)
+            alt->mbr.uplink =
+                ogs_sbi_bitrate_from_string(AltQosData->maxbr_ul);
+        if (AltQosData->maxbr_dl)
+            alt->mbr.downlink =
+                ogs_sbi_bitrate_from_string(AltQosData->maxbr_dl);
+
+        /* cap to NGAP ceiling */
+        if (alt->gbr.downlink == 0 ||
+                alt->gbr.downlink > OGS_MAX_BITRATE_NGAP)
+            alt->gbr.downlink = OGS_MAX_BITRATE_NGAP;
+        if (alt->gbr.uplink == 0 ||
+                alt->gbr.uplink > OGS_MAX_BITRATE_NGAP)
+            alt->gbr.uplink = OGS_MAX_BITRATE_NGAP;
+        if (alt->mbr.downlink == 0 ||
+                alt->mbr.downlink > OGS_MAX_BITRATE_NGAP)
+            alt->mbr.downlink = OGS_MAX_BITRATE_NGAP;
+        if (alt->mbr.uplink == 0 ||
+                alt->mbr.uplink > OGS_MAX_BITRATE_NGAP)
+            alt->mbr.uplink = OGS_MAX_BITRATE_NGAP;
+
+        ogs_warn("[SMF ALT QoS] pcc_rule=%s alt_index=%d "
+                 "gbr_dl=%" PRIu64 " gbr_ul=%" PRIu64,
+                 pcc_rule->id, alt->index,
+                 alt->gbr.downlink, alt->gbr.uplink);
+
+        pcc_rule->num_of_alt_qos_profile++;
             }   
 
             if (!QosData) {
