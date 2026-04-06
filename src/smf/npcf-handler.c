@@ -169,8 +169,7 @@ static void update_authorized_pcc_rule_and_qos(
                 }
             }
             if(PccRule->ref_alt_qos_params){ //kassem
-                ogs_warn("*****************************************************ALT QoS parameters are included in the policy decision!
-                    *****************************************************");
+                ogs_warn("*****************************************************ALT QoS parameters are included in the policy decision *****************************************************");
                 OpenAPI_map_t *AltQosMap = NULL;
                 OpenAPI_alt_qos_profile_t *AltQosProfileIter = NULL;
                 int kassem_i = 0;
