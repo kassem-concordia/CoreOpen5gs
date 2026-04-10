@@ -582,7 +582,8 @@ typedef struct ogs_pcc_rule_s {
     ogs_qos_t  qos;
 
     int num_of_alt_qos_profile; //kassem
-    ogs_alt_qos_profile_t alt_qos_profile[8]; //kassem 
+    ogs_alt_qos_profile_t alt_qos_profile[8]; //kassem
+    
 } ogs_pcc_rule_t;
 
 #define OGS_STORE_PCC_RULE(__dST, __sRC) \
@@ -612,17 +613,17 @@ typedef struct ogs_pcc_rule_s {
         (__dST)->precedence = (__sRC)->precedence; \
         memcpy(&(__dST)->qos, &(__sRC)->qos, sizeof(ogs_qos_t)); \
         (__dST)->num_of_alt_qos_profile = (__sRC)->num_of_alt_qos_profile; \
-        for (__iNDEX = 0; __iNDEX < (__sRC)->num_of_alt_qos; __iNDEX++) { \
-            if ((__sRC)->alt_qos[__iNDEX].qos_id) { \
-                (__dST)->alt_qos[__iNDEX].qos_id = \
-                    ogs_strdup((__sRC)->alt_qos[__iNDEX].qos_id); \
-                ogs_assert((__dST)->alt_qos[__iNDEX].qos_id); \
+        for (__iNDEX = 0; __iNDEX < (__sRC)->num_of_alt_qos_profile; __iNDEX++) { \
+            if ((__sRC)->alt_qos_profile[__iNDEX].qos_id) { \
+                (__dST)->alt_qos_profile[__iNDEX].qos_id = \
+                    ogs_strdup((__sRC)->alt_qos_profile[__iNDEX].qos_id); \
+                ogs_assert((__dST)->alt_qos_profile[__iNDEX].qos_id); \
             } else { \
-                (__dST)->alt_qos[__iNDEX].qos_id = NULL; \
+                (__dST)->alt_qos_profile[__iNDEX].qos_id = NULL; \
             } \
-            (__dST)->alt_qos[__iNDEX].index = (__sRC)->alt_qos[__iNDEX].index; \
-            memcpy(&(__dST)->alt_qos[__iNDEX].gbr, &(__sRC)->alt_qos[__iNDEX].gbr, sizeof(ogs_bitrate_t)); \
-            memcpy(&(__dST)->alt_qos[__iNDEX].mbr, &(__sRC)->alt_qos[__iNDEX].mbr, sizeof(ogs_bitrate_t)); \
+            (__dST)->alt_qos_profile[__iNDEX].index = (__sRC)->alt_qos[__iNDEX].index; \
+            memcpy(&(__dST)->alt_qos_profile[__iNDEX].gbr, &(__sRC)->alt_qos_profile[__iNDEX].gbr, sizeof(ogs_bitrate_t)); \
+            memcpy(&(__dST)->alt_qos_profile[__iNDEX].mbr, &(__sRC)->alt_qos_profile[__iNDEX].mbr, sizeof(ogs_bitrate_t)); \
         } while(0) //kassem
 
 #define OGS_PCC_RULE_FREE(__pCCrULE) \
@@ -638,9 +639,9 @@ typedef struct ogs_pcc_rule_s {
             OGS_FLOW_FREE(&((__pCCrULE)->flow[__pCCrULE_iNDEX])); \
         } \
         for (__pCCrULE_iNDEX = 0; \
-            __pCCrULE_iNDEX < (__pCCrULE)->num_of_alt_qos; __pCCrULE_iNDEX++) { \
-            if ((__pCCrULE)->alt_qos[__pCCrULE_iNDEX].qos_id) \
-                ogs_free((__pCCrULE)->alt_qos[__pCCrULE_iNDEX].qos_id); \
+            __pCCrULE_iNDEX < (__pCCrULE)->num_of_alt_qos_profile; __pCCrULE_iNDEX++) { \
+            if ((__pCCrULE)->alt_qos_profile[__pCCrULE_iNDEX].qos_id) \
+                ogs_free((__pCCrULE)->alt_qos_profile[__pCCrULE_iNDEX].qos_id); \
         } \
         memset((__pCCrULE), 0, sizeof(ogs_pcc_rule_t)); \
     } while(0) //kassem
