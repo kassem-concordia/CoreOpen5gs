@@ -517,7 +517,7 @@ bool pcf_sbi_send_smpolicycontrol_create_response(
         QosData->qnc = 1; // kassem
         ogs_assert(QosData);//kassem
         //OpenAPI_list_add(PolicyCtrlReqTriggers, (void *)OpenAPI_policy_control_request_trigger_QOS_NOTIF); //kassem
-        bool qos_notif_trigger_added = true; //kassem following claude logic
+        //bool qos_notif_trigger_added = true; //kassem following claude logic
 
         QosDecisionMap = OpenAPI_map_create(QosData->qos_id, QosData);
         ogs_assert(QosDecisionMap);
