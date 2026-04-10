@@ -516,7 +516,7 @@ bool pcf_sbi_send_smpolicycontrol_create_response(
         QosData->is_qnc = true;
         QosData->qnc = 1; // kassem
         ogs_assert(QosData);//kassem
-        OpenAPI_list_add(PolicyCtrlReqTriggers, (void *)OpenAPI_policy_control_request_trigger_QOS_NOTIF); //kassem
+        //OpenAPI_list_add(PolicyCtrlReqTriggers, (void *)OpenAPI_policy_control_request_trigger_QOS_NOTIF); //kassem
         bool qos_notif_trigger_added = true; //kassem following claude logic
 
         QosDecisionMap = OpenAPI_map_create(QosData->qos_id, QosData);
@@ -563,14 +563,14 @@ bool pcf_sbi_send_smpolicycontrol_create_response(
             ogs_assert(AltQosData->gbr_dl);
             if (primary_gbr_ul) { //kassem
                 uint64_t scaled2 = (primary_gbr_ul / (j+2)); //kassem
-                AltQosData->gbr_ul = ogs_sbi_bitrate_to_string(scaled, OGS_SBI_BITRATE_KBPS); //kassem
+                AltQosData->gbr_ul = ogs_sbi_bitrate_to_string(scaled2, OGS_SBI_BITRATE_KBPS); //kassem
                 ogs_assert(AltQosData->gbr_ul); //kassem
             } //kassem   
             AltQosData->is_qnc = true; //kassem
             AltQosData->qnc = true; //kassem
-            AltQosMap = OpenAPI_map_create(AltQosData->qos_id, AltQosData); //kassem
-            ogs_assert(AltQosMap); //kassem
-            OpenAPI_list_add(QosDecisionList, AltQosMap); //kassem
+            AltQosDecisionMap = OpenAPI_map_create(AltQosData->qos_id, AltQosData); //kassem
+            ogs_assert(AltQosDecisionMap); //kassem
+            OpenAPI_list_add(QosDecisionList, AltQosDecisionMap); //kassem
             OpenAPI_list_add(AltQosParamList,ogs_strdup(AltQosData->qos_id)); //kassem   
         }
         PccRule->ref_alt_qos_params = AltQosParamList; //kassem
