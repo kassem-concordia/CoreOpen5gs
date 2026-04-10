@@ -512,14 +512,17 @@ bool pcf_sbi_send_smpolicycontrol_create_response(
         ogs_assert(QosData);
         ogs_assert(QosData->qos_id);
 
+        // we can add if qosdata->gbr_dl or ul as a condition kassem
         QosData->is_qnc = true;
         QosData->qnc = 1; // kassem
         ogs_assert(QosData);//kassem
-        
+        OpenAPI_list_add(PolicyCtrlReqTriggers, (void *)OpenAPI_policy_control_request_trigger_QOS_NOTIF); //kassem
+        bool qos_notif_trigger_added = true; //kassem following claude logic
+
         QosDecisionMap = OpenAPI_map_create(QosData->qos_id, QosData);
         ogs_assert(QosDecisionMap);
 
-        ogs_warn("QNC AHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH **************************************************************************************************************************************");
+        ogs_warn("QNC AHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH **************************************************************************");
         ogs_error("[QNC DEBUG] supi=%s psi=%d qos_id=%s is_qnc=%d qnc=%d",
         pcf_ue_sm->supi,
         sess->psi,
@@ -529,6 +532,49 @@ bool pcf_sbi_send_smpolicycontrol_create_response(
 
         OpenAPI_list_add(QosDecisionList, QosDecisionMap);
 
+        OpenAPI_list_t *AltQosParamList = NULL; //kassem
+        int j; //kassem
+        AltQosParamList = OpenAPI_list_create(); //kassem
+        ogs_assert(AltQosParamList); //kassem
+
+        uint64_t primary_gbr_dl = //kassem
+                ogs_sbi_bitrate_from_string(QosData->gbr_dl); //kassem
+        uint64_t primary_gbr_ul = QosData->gbr_ul ? //kassem
+                ogs_sbi_bitrate_from_string(QosData->gbr_ul) : 0; //kassem
+
+        for (j = 0; j < 3; j++) { //kassem
+            OpenAPI_qos_data_t *AltQosData = NULL; //kassem
+            OpenAPI_map_t *AltQosDecisionMap = NULL; //kassem
+            char *alt_id = NULL; //kassem
+            AltQosData = ogs_calloc(1, sizeof(*AltQosData)); //kassem
+            ogs_assert(AltQosData); //kassem
+
+            alt_id = ogs_msprintf("%s-alt-%d", QosData->qos_id, j); //kassem
+            ogs_assert(alt_id); //kassem
+            AltQosData->qos_id = alt_id; //kassem
+
+            if (QosData->is__5qi) { //kassem
+                    AltQosData->is__5qi = true; //kassem
+                    AltQosData->_5qi    = QosData->_5qi; //kassem
+            } //kassem
+
+            uint64_t scaled = (primary_gbr_dl / (j+2));
+            AltQosData->gbr_dl = ogs_sbi_bitrate_to_string(scaled, OGS_SBI_BITRATE_KBPS); //kassem
+            ogs_assert(AltQosData->gbr_dl);
+            if (primary_gbr_ul) { //kassem
+                uint64_t scaled2 = (primary_gbr_ul / (j+2)); //kassem
+                AltQosData->gbr_ul = ogs_sbi_bitrate_to_string(scaled, OGS_SBI_BITRATE_KBPS); //kassem
+                ogs_assert(AltQosData->gbr_ul); //kassem
+            } //kassem   
+            AltQosData->is_qnc = true; //kassem
+            AltQosData->qnc = true; //kassem
+            AltQosMap = OpenAPI_map_create(AltQosData->qos_id, AltQosData); //kassem
+            ogs_assert(AltQosMap); //kassem
+            OpenAPI_list_add(QosDecisionList, AltQosMap); //kassem
+            OpenAPI_list_add(AltQosParamList,ogs_strdup(AltQosData->qos_id)); //kassem   
+        }
+        PccRule->ref_alt_qos_params = AltQosParamList; //kassem
+/*
         //kassem  this part is working
         OpenAPI_list_t *AltQosRefList = OpenAPI_list_create();
         ogs_assert(AltQosRefList);
@@ -564,35 +610,7 @@ bool pcf_sbi_send_smpolicycontrol_create_response(
         OpenAPI_list_add(AltQosRefList, alt2->qos_id);
 
         // attach references
-        PccRule->ref_alt_qos_params = AltQosRefList;
-        //kassem
-        OpenAPI_lnode_t *node;
-        OpenAPI_list_for_each(PccRule->ref_alt_qos_params, node) {
-            ogs_info("[PCF DEBUG] OpenAPI PCC Rule '%s' contains Alt QoS Ref: '%s'", 
-                        PccRule->pcc_rule_id, (char *)node->data);
-        }
-        for (int j = 0; j < pcc_rule->num_of_alt_qos_profile; j++) {
-            ogs_info("[PCF DEBUG] ********************************* Internal Alt QoS Data -> ID: %s, 5QI: %d, GBR UL: %llu bps, GBR DL: %llu bps",
-                pcc_rule->alt_qos_profile[j].qos_id,
-                pcc_rule->alt_qos_profile[j].index,
-                (unsigned long long)pcc_rule->alt_qos_profile[j].gbr.uplink,
-                (unsigned long long)pcc_rule->alt_qos_profile[j].gbr.downlink);
-        }
-        // //kassem modifications + gigi
-        // PccRule->ref_alt_qos_params = OpenAPI_list_create();
-        // OpenAPI_list_add(PccRule->ref_alt_qos_params, ogs_strdup("alt-qos-1"));
-        // OpenAPI_qos_data_t *AltQosData_1 = ogs_sbi_build_qos_data(pcc_rule);
-        // ogs_assert(AltQosData_1);
-        // AltQosData_1->qos_id = ogs_strdup("alt-qos-1");
-        // AltQosData_1->gbr_dl = ogs_sbi_bitrate_to_string(pcc_rule->qos.gbr.downlink / 2, OGS_SBI_BITRATE_KBPS);
-        // AltQosData_1->gbr_ul = ogs_sbi_bitrate_to_string(pcc_rule->qos.gbr.uplink / 2, OGS_SBI_BITRATE_KBPS);
-        // AltQosData_1->maxbr_dl = ogs_sbi_bitrate_to_string(pcc_rule->qos.mbr.downlink / 2, OGS_SBI_BITRATE_KBPS);
-        // AltQosData_1->maxbr_ul = ogs_sbi_bitrate_to_string(pcc_rule->qos.mbr.uplink / 2, OGS_SBI_BITRATE_KBPS);
-        // OpenAPI_map_t *AltQosDecisionMap_1 = OpenAPI_map_create(AltQosData_1->qos_id, AltQosData_1);
-        // ogs_assert(AltQosDecisionMap_1);
-
-
-        
+        PccRule->ref_alt_qos_params = AltQosRefList;    */  
     }
 
     if (PccRuleList->count)
