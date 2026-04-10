@@ -528,7 +528,8 @@ bool pcf_sbi_send_smpolicycontrol_create_response(
         QosData->qnc);
 
         OpenAPI_list_add(QosDecisionList, QosDecisionMap);
-        //kassem
+
+        //kassem  this part is working
         OpenAPI_list_t *AltQosRefList = OpenAPI_list_create();
         ogs_assert(AltQosRefList);
 
@@ -565,6 +566,28 @@ bool pcf_sbi_send_smpolicycontrol_create_response(
         // attach references
         PccRule->ref_alt_qos_params = AltQosRefList;
         //kassem
+        for (int j = 0; j < 2; j++) {
+            ogs_info("[PCF DEBUG] ******************************************************************************************* Internal Alt QoS Data -> ID: %s, 5QI: %d, GBR UL: %llu bps, GBR DL: %llu bps",
+                PccRule->ref_alt_qos_params[j].qos_id,
+                PccRule->ref_alt_qos_params[j].index,
+                (unsigned long long)PccRule->ref_alt_qos_params[j].gbr.uplink,
+                (unsigned long long)PccRule->ref_alt_qos_params[j].gbr.downlink);
+        }
+
+        // //kassem modifications + gigi
+        // PccRule->ref_alt_qos_params = OpenAPI_list_create();
+        // OpenAPI_list_add(PccRule->ref_alt_qos_params, ogs_strdup("alt-qos-1"));
+        // OpenAPI_qos_data_t *AltQosData_1 = ogs_sbi_build_qos_data(pcc_rule);
+        // ogs_assert(AltQosData_1);
+        // AltQosData_1->qos_id = ogs_strdup("alt-qos-1");
+        // AltQosData_1->gbr_dl = ogs_sbi_bitrate_to_string(pcc_rule->qos.gbr.downlink / 2, OGS_SBI_BITRATE_KBPS);
+        // AltQosData_1->gbr_ul = ogs_sbi_bitrate_to_string(pcc_rule->qos.gbr.uplink / 2, OGS_SBI_BITRATE_KBPS);
+        // AltQosData_1->maxbr_dl = ogs_sbi_bitrate_to_string(pcc_rule->qos.mbr.downlink / 2, OGS_SBI_BITRATE_KBPS);
+        // AltQosData_1->maxbr_ul = ogs_sbi_bitrate_to_string(pcc_rule->qos.mbr.uplink / 2, OGS_SBI_BITRATE_KBPS);
+        // OpenAPI_map_t *AltQosDecisionMap_1 = OpenAPI_map_create(AltQosData_1->qos_id, AltQosData_1);
+        // ogs_assert(AltQosDecisionMap_1);
+
+
         
     }
 

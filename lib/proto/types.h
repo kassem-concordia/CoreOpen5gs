@@ -460,7 +460,8 @@ int ogs_check_br_conf(ogs_bitrate_t *br);
  * QoS Structure                 */
 //kassem
 typedef struct ogs_alt_qos_profile_s {
-    uint8_t       index;    /* altQosParaSetIndex (1..255), sent to gNB via NGAP */
+    char *qos_id; 
+    uint8_t index;   
     ogs_bitrate_t gbr;      /* guaranteed bit rate DL/UL */
     ogs_bitrate_t mbr;      /* max bit rate DL/UL */
 } ogs_alt_qos_profile_t; //kassem 
@@ -609,10 +610,19 @@ typedef struct ogs_pcc_rule_s {
         (__dST)->flow_status = (__sRC)->flow_status; \
         (__dST)->precedence = (__sRC)->precedence; \
         memcpy(&(__dST)->qos, &(__sRC)->qos, sizeof(ogs_qos_t)); \
-        memcpy((__dST)->alt_qos_profile, (__sRC)->alt_qos_profile, \
-            sizeof(ogs_alt_qos_profile_t) * (__sRC)->num_of_alt_qos_profile); \
         (__dST)->num_of_alt_qos_profile = (__sRC)->num_of_alt_qos_profile; \
-    } while(0)
+        for (__iNDEX = 0; __iNDEX < (__sRC)->num_of_alt_qos; __iNDEX++) { \
+            if ((__sRC)->alt_qos[__iNDEX].qos_id) { \
+                (__dST)->alt_qos[__iNDEX].qos_id = \
+                    ogs_strdup((__sRC)->alt_qos[__iNDEX].qos_id); \
+                ogs_assert((__dST)->alt_qos[__iNDEX].qos_id); \
+            } else { \
+                (__dST)->alt_qos[__iNDEX].qos_id = NULL; \
+            } \
+            (__dST)->alt_qos[__iNDEX].index = (__sRC)->alt_qos[__iNDEX].index; \
+            memcpy(&(__dST)->alt_qos[__iNDEX].gbr, &(__sRC)->alt_qos[__iNDEX].gbr, sizeof(ogs_bitrate_t)); \
+            memcpy(&(__dST)->alt_qos[__iNDEX].mbr, &(__sRC)->alt_qos[__iNDEX].mbr, sizeof(ogs_bitrate_t)); \    
+    } while(0) //kassem
 
 #define OGS_PCC_RULE_FREE(__pCCrULE) \
     do { \
@@ -626,8 +636,13 @@ typedef struct ogs_pcc_rule_s {
             __pCCrULE_iNDEX < (__pCCrULE)->num_of_flow; __pCCrULE_iNDEX++) { \
             OGS_FLOW_FREE(&((__pCCrULE)->flow[__pCCrULE_iNDEX])); \
         } \
+        for (__pCCrULE_iNDEX = 0; \
+            __pCCrULE_iNDEX < (__pCCrULE)->num_of_alt_qos; __pCCrULE_iNDEX++) { \
+            if ((__pCCrULE)->alt_qos[__pCCrULE_iNDEX].qos_id) \
+                ogs_free((__pCCrULE)->alt_qos[__pCCrULE_iNDEX].qos_id); \
+        } \
         memset((__pCCrULE), 0, sizeof(ogs_pcc_rule_t)); \
-    } while(0)
+    } while(0) //kassem
 
 /**********************************
  * PDN Structure                 */
