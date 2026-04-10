@@ -624,7 +624,8 @@ typedef struct ogs_pcc_rule_s {
             (__dST)->alt_qos_profile[__iNDEX].index = (__sRC)->alt_qos_profile[__iNDEX].index; \
             memcpy(&(__dST)->alt_qos_profile[__iNDEX].gbr, &(__sRC)->alt_qos_profile[__iNDEX].gbr, sizeof(ogs_bitrate_t)); \
             memcpy(&(__dST)->alt_qos_profile[__iNDEX].mbr, &(__sRC)->alt_qos_profile[__iNDEX].mbr, sizeof(ogs_bitrate_t)); \
-        } while(0) 
+        } \
+    }while(0) 
 
 #define OGS_PCC_RULE_FREE(__pCCrULE) \
     do { \
