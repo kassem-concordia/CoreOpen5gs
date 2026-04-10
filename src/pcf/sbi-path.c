@@ -566,14 +566,18 @@ bool pcf_sbi_send_smpolicycontrol_create_response(
         // attach references
         PccRule->ref_alt_qos_params = AltQosRefList;
         //kassem
-        for (int j = 0; j < 2; j++) {
-            ogs_info("[PCF DEBUG] ******************************************************************************************* Internal Alt QoS Data -> ID: %s, 5QI: %d, GBR UL: %llu bps, GBR DL: %llu bps",
-                PccRule->ref_alt_qos_params[j].qos_id,
-                PccRule->ref_alt_qos_params[j].index,
-                (unsigned long long)PccRule->ref_alt_qos_params[j].gbr.uplink,
-                (unsigned long long)PccRule->ref_alt_qos_params[j].gbr.downlink);
+        OpenAPI_lnode_t *node;
+        OpenAPI_list_for_each(PccRule->ref_alt_qos_params, node) {
+            ogs_info("[PCF DEBUG] OpenAPI PCC Rule '%s' contains Alt QoS Ref: '%s'", 
+                        PccRule->pcc_rule_id, (char *)node->data);
         }
-
+        for (int j = 0; j < pcc_rule->num_of_alt_qos_profile; j++) {
+            ogs_info("[PCF DEBUG] ********************************* Internal Alt QoS Data -> ID: %s, 5QI: %d, GBR UL: %llu bps, GBR DL: %llu bps",
+                pcc_rule->alt_qos_profile[j].qos_id,
+                pcc_rule->alt_qos_profile[j].index,
+                (unsigned long long)pcc_rule->alt_qos_profile[j].gbr.uplink,
+                (unsigned long long)pcc_rule->alt_qos_profile[j].gbr.downlink);
+        }
         // //kassem modifications + gigi
         // PccRule->ref_alt_qos_params = OpenAPI_list_create();
         // OpenAPI_list_add(PccRule->ref_alt_qos_params, ogs_strdup("alt-qos-1"));
