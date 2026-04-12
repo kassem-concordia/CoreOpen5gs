@@ -464,6 +464,7 @@ typedef struct ogs_alt_qos_profile_s {
     uint8_t index;   
     ogs_bitrate_t gbr;      /* guaranteed bit rate DL/UL */
     ogs_bitrate_t mbr;      /* max bit rate DL/UL */
+    bool qnc;
 } ogs_alt_qos_profile_t; //kassem 
 
 typedef struct ogs_qos_s {
