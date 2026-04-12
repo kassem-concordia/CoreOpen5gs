@@ -367,7 +367,7 @@ static void update_authorized_pcc_rule_and_qos(
                         if (strcmp(alt_qos_id, d->qos_id) != 0) continue; //kassem
  
                         /* Matched — copy relevant fields */ //kassem
-                        ogs_qos_t *alt = &pcc_rule->alt_qos_param[alt_j]; //kassem
+                        ogs_qos_t *alt = &pcc_rule->alt_qos_profile[alt_j]; //kassem
                         memset(alt, 0, sizeof(*alt)); //kassem
  
                         if (d->is__5qi) //kassem
@@ -396,7 +396,7 @@ static void update_authorized_pcc_rule_and_qos(
                                  (unsigned long long)alt->gbr.uplink, //kassem
                                  alt->qnc ? "true" : "false"); //kassem
  
-                        pcc_rule->num_of_alt_qos_param = ++alt_j; //kassem
+                        pcc_rule->num_of_alt_qos_profile = ++alt_j; //kassem
                         break; //kassem
                     } //kassem
                 } //kassem
