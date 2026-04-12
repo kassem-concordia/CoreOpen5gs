@@ -367,7 +367,7 @@ static void update_authorized_pcc_rule_and_qos(
                         if (strcmp(alt_qos_id, d->qos_id) != 0) continue; //kassem
  
                         /* Matched — copy relevant fields */ //kassem
-                        ogs_qos_t *alt = &pcc_rule->alt_qos_profile[alt_j]; //kassem
+                        ogs_alt_qos_profile_t *alt = &pcc_rule->alt_qos_profile[alt_j]; //kassem
                         memset(alt, 0, sizeof(*alt)); //kassem
  
                         if (d->is__5qi) //kassem
