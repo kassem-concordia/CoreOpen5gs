@@ -340,6 +340,68 @@ static void update_authorized_pcc_rule_and_qos(
             pcc_rule->qos.index = QosData->_5qi;
             pcc_rule->qos.arp.priority_level = QosData->priority_level;
 
+            if (QosData->is_qnc)
+                pcc_rule->qos.qnc = QosData->qnc ? true : false; //kassem
+            ogs_error("******************************[QNC] pcc_rule[%d] id=%s qnc=%s", //kassem
+                sess->policy.num_of_pcc_rule, pcc_rule->id, //kassem
+                pcc_rule->qos.qnc ? "true" : "false"); //kassem
+
+            pcc_rule->num_of_alt_qos_profile = 0;//kassem
+            if(PccRule->ref_alt_qos_params && SmPolicyDecision->qos_decs) {
+                OpenAPI_lnode_t *alt_node = NULL; //kassem
+                int alt_j = 0; //kassem
+ 
+                OpenAPI_list_for_each(PccRule->ref_alt_qos_params, alt_node) { //kassem
+                    char *alt_qos_id = alt_node->data; //kassem
+                    OpenAPI_lnode_t *dec_node = NULL; //kassem
+ 
+                    if (!alt_qos_id) continue; //kassem
+                    /* Find the matching QosData entry by ID */ //kassem
+                    OpenAPI_list_for_each(SmPolicyDecision->qos_decs, dec_node) { //kassem
+                        OpenAPI_map_t *m = dec_node->data; //kassem
+                        OpenAPI_qos_data_t *d = NULL; //kassem
+ 
+                        if (!m || !m->value) continue; //kassem
+                        d = m->value; //kassem
+                        if (!d->qos_id) continue; //kassem
+                        if (strcmp(alt_qos_id, d->qos_id) != 0) continue; //kassem
+ 
+                        /* Matched — copy relevant fields */ //kassem
+                        ogs_qos_t *alt = &pcc_rule->alt_qos_param[alt_j]; //kassem
+                        memset(alt, 0, sizeof(*alt)); //kassem
+ 
+                        if (d->is__5qi) //kassem
+                            alt->index = d->_5qi; //kassem
+                        else //kassem
+                            alt->index = pcc_rule->qos.index; /* inherit */ //kassem
+ 
+                        if (d->gbr_dl) //kassem
+                            alt->gbr.downlink = //kassem
+                                ogs_sbi_bitrate_from_string(d->gbr_dl); //kassem
+                        if (d->gbr_ul) //kassem
+                            alt->gbr.uplink = //kassem
+                                ogs_sbi_bitrate_from_string(d->gbr_ul); //kassem
+ 
+                        /* Alt profiles do not carry MBR; inherit primary */ //kassem
+                        alt->mbr.downlink = pcc_rule->qos.mbr.downlink; //kassem
+                        alt->mbr.uplink   = pcc_rule->qos.mbr.uplink; //kassem
+ 
+                        /* QNC flag on the alt profile itself */ //kassem
+                        alt->qnc = (d->is_qnc && d->qnc); //kassem
+ 
+                        ogs_info("********************************************[ALT-QOS] rule %s alt[%d] " //kassem
+                                 "5qi=%d gbr_dl=%llu gbr_ul=%llu qnc=%s", //kassem
+                                 pcc_rule->id, alt_j, alt->index, //kassem
+                                 (unsigned long long)alt->gbr.downlink, //kassem
+                                 (unsigned long long)alt->gbr.uplink, //kassem
+                                 alt->qnc ? "true" : "false"); //kassem
+ 
+                        pcc_rule->num_of_alt_qos_param = ++alt_j; //kassem
+                        break; //kassem
+                    } //kassem
+                } //kassem
+            }
+
             if (QosData->arp) {
                 pcc_rule->qos.arp.priority_level = QosData->arp->priority_level;
                 if (QosData->arp->preempt_cap ==
@@ -377,8 +439,7 @@ static void update_authorized_pcc_rule_and_qos(
                 pcc_rule->qos.gbr.downlink =
                     ogs_sbi_bitrate_from_string(QosData->gbr_dl);
 
-            if (QosData->is_qnc)
-                pcc_rule->qos.qnc = QosData->qnc ? true : false; //kassem
+            
 
             if (pcc_rule->qos.mbr.downlink || pcc_rule->qos.mbr.uplink ||
                 pcc_rule->qos.gbr.downlink || pcc_rule->qos.gbr.uplink) {
@@ -395,11 +456,11 @@ static void update_authorized_pcc_rule_and_qos(
                     pcc_rule->qos.gbr.uplink > OGS_MAX_BITRATE_NGAP)
                     pcc_rule->qos.gbr.uplink = OGS_MAX_BITRATE_NGAP;
             }
-            ogs_warn("****************[SMF QNC] qos_id=%s is_qnc=%d  received qnc=%d stored=%d",
-                        QosData->qos_id,
-                        QosData->is_qnc,
-                        QosData->qnc,
-                        pcc_rule->qos.qnc); //kassem
+            // ogs_warn("****************[SMF QNC] qos_id=%s is_qnc=%d  received qnc=%d stored=%d",
+            //             QosData->qos_id,
+            //             QosData->is_qnc,
+            //             QosData->qnc,
+            //             pcc_rule->qos.qnc); //kassem
             
             sess->policy.num_of_pcc_rule++;
         }
