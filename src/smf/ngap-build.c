@@ -31,7 +31,7 @@ static void fill_qos_level_parameters(
         *allocationAndRetentionPriority = NULL;
     NGAP_QosCharacteristics_t *qosCharacteristics = NULL;
     NGAP_NonDynamic5QIDescriptor_t *nonDynamic5QI = NULL;
-    ogs_warn("fill_qos_level_parameters called; include_gbr=%d",include_gbr);
+    ogs_warn("fill_qos_level_parameters called; include_gbr=%ld",include_gbr);
     /* Allocation and Retention Priority */
     allocationAndRetentionPriority =
         &params->allocationAndRetentionPriority;
@@ -163,7 +163,7 @@ static void attach_alt_qos_params_list(NGAP_QosFlowLevelQosParameters_t *params,
 
         ASN_SEQUENCE_ADD(&altList->list, item); //kassem
 
-        ogs_info("[ALT-QOS] NGAP alt[%d] index=%d " //kassem
+        ogs_info("[ALT-QOS] NGAP alt[%d] index=%ld " //kassem
                  "gbr_dl=%llu gbr_ul=%llu", //kassem
                  j, item->alternativeQoSParaSetIndex, //kassem
                  alt->gbr.downlink //kassem
@@ -447,12 +447,23 @@ ogs_pkbuf_t *ngap_build_pdu_session_resource_setup_request_transfer(
                     &QosFlowSetupRequestItem->qosFlowLevelQosParameters,
                     &qos_flow->qos, true);
             
-            if (qos_flow->qos.qnc && 
-                    qos_flow->num_of_alt_qos_param > 0) { //kassem
-                attach_alt_qos_params_list( 
-                    &QosFlowSetupRequestItem->qosFlowLevelQosParameters, 
-                    qos_flow->alt_qos_param,
-                    qos_flow->num_of_alt_qos_param); //kassem
+            if (qos_flow->qnc && qos_flow->pcc_rule.id) { //kassem
+                int _pi; //kassem
+                for (_pi = 0; //kassem
+                     _pi < sess->policy.num_of_pcc_rule; _pi++) { //kassem
+                    ogs_pcc_rule_t *_pr = //kassem
+                        &sess->policy.pcc_rule[_pi]; //kassem
+                    if (_pr->id && //kassem
+                        strcmp(_pr->id, qos_flow->pcc_rule.id) == 0 && //kassem
+                        _pr->num_of_alt_qos_param > 0) { //kassem
+                        attach_alt_qos_params_list( //kassem
+                            &QosFlowSetupRequestItem //kassem
+                                ->qosFlowLevelQosParameters, //kassem
+                            _pr->alt_qos_param, //kassem
+                            _pr->num_of_alt_qos_param); //kassem
+                        break; //kassem
+                    } //kassem
+                } //kassem
             } //kassem
         }
     }
@@ -599,12 +610,24 @@ ogs_pkbuf_t *ngap_build_pdu_session_resource_modify_request_transfer(
                     QosFlowAddOrModifyRequestItem->qosFlowLevelQosParameters,
                     &qos_flow->qos, include_gbr);
 
-            if (include_gbr && qos_flow->qos.qnc && 
-                    qos_flow->num_of_alt_qos_param > 0) { 
-                attach_alt_qos_params_list( 
-                    QosFlowAddOrModifyRequestItem->qosFlowLevelQosParameters, 
-                    qos_flow->alt_qos_param, 
-                    qos_flow->num_of_alt_qos_param); 
+            if (include_gbr && qos_flow->qnc && //kassem
+                    qos_flow->pcc_rule.id) { //kassem
+                int _pi; //kassem
+                for (_pi = 0; //kassem
+                     _pi < sess->policy.num_of_pcc_rule; _pi++) { //kassem
+                    ogs_pcc_rule_t *_pr = //kassem
+                        &sess->policy.pcc_rule[_pi]; //kassem
+                    if (_pr->id && //kassem
+                        strcmp(_pr->id, qos_flow->pcc_rule.id) == 0 && //kassem
+                        _pr->num_of_alt_qos_param > 0) { //kassem
+                        attach_alt_qos_params_list( //kassem
+                            QosFlowAddOrModifyRequestItem //kassem
+                                ->qosFlowLevelQosParameters, //kassem
+                            _pr->alt_qos_param, //kassem
+                            _pr->num_of_alt_qos_param); //kassem
+                        break; //kassem
+                    } //kassem
+                } //kassem
             } //kassem
         }
     }
