@@ -277,6 +277,7 @@ typedef struct smf_bearer_s {
     ogs_pool_id_t   sess_id;
     int num_of_alt_qos_param; //kassem
     ogs_qos_t *alt_qos_param;
+    bool qnc;
 } smf_bearer_t;
 
 #define SMF_SESS(pfcp_sess) ogs_container_of(pfcp_sess, smf_sess_t, pfcp)

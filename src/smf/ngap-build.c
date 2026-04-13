@@ -163,7 +163,7 @@ static void attach_alt_qos_params_list(NGAP_QosFlowLevelQosParameters_t *params,
 
         ASN_SEQUENCE_ADD(&altList->list, item); //kassem
 
-        ogs_info("[ALT-QOS] NGAP alt[%d] index=%ld " //kassem
+        ogs_info("[ALT-QOS] NGAP alt[%d] index=%d " //kassem
                  "gbr_dl=%llu gbr_ul=%llu", //kassem
                  j, item->alternativeQoSParaSetIndex, //kassem
                  alt->gbr.downlink //kassem
@@ -455,12 +455,12 @@ ogs_pkbuf_t *ngap_build_pdu_session_resource_setup_request_transfer(
                         &sess->policy.pcc_rule[_pi]; //kassem
                     if (_pr->id && //kassem
                         strcmp(_pr->id, qos_flow->pcc_rule.id) == 0 && //kassem
-                        _pr->num_of_alt_qos_param > 0) { //kassem
+                        _pr->num_of_alt_qos_profile > 0) { //kassem
                         attach_alt_qos_params_list( //kassem
                             &QosFlowSetupRequestItem //kassem
                                 ->qosFlowLevelQosParameters, //kassem
                             _pr->alt_qos_param, //kassem
-                            _pr->num_of_alt_qos_param); //kassem
+                            _pr->num_of_alt_qos_profile); //kassem
                         break; //kassem
                     } //kassem
                 } //kassem
@@ -619,12 +619,12 @@ ogs_pkbuf_t *ngap_build_pdu_session_resource_modify_request_transfer(
                         &sess->policy.pcc_rule[_pi]; //kassem
                     if (_pr->id && //kassem
                         strcmp(_pr->id, qos_flow->pcc_rule.id) == 0 && //kassem
-                        _pr->num_of_alt_qos_param > 0) { //kassem
+                        _pr->num_of_alt_qos_profile > 0) { //kassem
                         attach_alt_qos_params_list( //kassem
                             QosFlowAddOrModifyRequestItem //kassem
                                 ->qosFlowLevelQosParameters, //kassem
                             _pr->alt_qos_param, //kassem
-                            _pr->num_of_alt_qos_param); //kassem
+                            _pr->num_of_alt_qos_profile); //kassem
                         break; //kassem
                     } //kassem
                 } //kassem
