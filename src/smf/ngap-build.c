@@ -19,11 +19,117 @@
 
 #include "ngap-build.h"
 
+static void attach_alt_qos_params_list( //kassem
+        NGAP_QosFlowLevelQosParameters_t *params, //kassem
+        const ogs_qos_t *alt_params, //kassem
+        int num_of_alt) //kassem
+{ //kassem
+    /*
+     * Declare a local container type using A_SEQUENCE_OF so we get a
+     * fully-sized, complete struct whose ->list field can be passed to
+     * ASN_SEQUENCE_ADD.  We then cast its address to the generic
+     * ProtocolExtensionContainer pointer that iE_Extensions expects —
+     * the same technique Open5GS uses for SecurityIndication_ExtIEs.
+     */
+    A_SEQUENCE_OF(NGAP_GBR_QosInformation_ExtIEs_t) extContainerBody; //kassem
+    NGAP_GBR_QosInformation_ExtIEs_t *extIe = NULL; //kassem
+    NGAP_GBR_QosInformation_t *gBR_QosInformation = NULL; //kassem
+    NGAP_AlternativeQoSParaSetList_t *altList = NULL; //kassem
+    void *extContainer = NULL; //kassem
+    int j, added = 0; //kassem
+
+    if (!params || !alt_params || num_of_alt <= 0) //kassem
+        return; //kassem
+
+    gBR_QosInformation = params->gBR_QosInformation; //kassem
+    if (!gBR_QosInformation) { //kassem
+        /* Only GBR flows have GBR_QosInformation; nothing to attach. */ //kassem
+        ogs_error("[ALT-QOS] gBR_QosInformation is NULL, cannot attach list"); //kassem
+        return; //kassem
+    } //kassem
+
+    /*
+     * Step 1 — allocate a ProtocolExtensionContainer for
+     * GBR_QosInformation using the concrete ExtIEs item type.
+     * We allocate it as a generic blob that matches the layout of
+     * A_SEQUENCE_OF(NGAP_GBR_QosInformation_ExtIEs_t), then cast.
+     */
+    (void)extContainerBody; /* suppress unused-variable warning */ //kassem
+    extContainer = CALLOC(1, sizeof(A_SEQUENCE_OF(NGAP_GBR_QosInformation_ExtIEs_t))); //kassem
+    ogs_assert(extContainer); //kassem
+    gBR_QosInformation->iE_Extensions = //kassem
+        (struct NGAP_ProtocolExtensionContainer *)extContainer; //kassem
+
+    /* Step 2 — allocate the ExtIEs item carrying AlternativeQoSParaSetList. */
+    extIe = CALLOC(1, sizeof(*extIe)); //kassem
+    ogs_assert(extIe); //kassem
+    ASN_SEQUENCE_ADD(extContainer, extIe); //kassem
+
+    extIe->id          = NGAP_ProtocolIE_ID_id_AlternativeQoSParaSetList; //kassem
+    extIe->criticality = NGAP_Criticality_ignore; //kassem
+    extIe->extensionValue.present = //kassem
+        NGAP_GBR_QosInformation_ExtIEs__extensionValue_PR_AlternativeQoSParaSetList; //kassem
+
+    /* The list is an inline member of the extensionValue choice union. */ //kassem
+    altList = &extIe->extensionValue.choice.AlternativeQoSParaSetList; //kassem
+
+    /*
+     * Step 3 — build AlternativeQoSParaSetItem entries.
+     *
+     * TS 38.413 §9.3.1.151:
+     *   alternativeQoSParaSetIndex  M  INTEGER 1..8  (1-based per §9.3.1.152)
+     *   guaranteedFlowBitRateDL     O  BitRate
+     *   guaranteedFlowBitRateUL     O  BitRate
+     * maxnoofQosParaSets = 8.
+     */
+    for (j = 0; j < num_of_alt && added < 8; j++) { //kassem
+        const ogs_qos_t *alt = &alt_params[j]; //kassem
+        NGAP_AlternativeQoSParaSetItem_t *item = NULL; //kassem
+
+        if (!alt->gbr.downlink && !alt->gbr.uplink) //kassem
+            continue; //kassem
+
+        item = CALLOC(1, sizeof(*item)); //kassem
+        ogs_assert(item); //kassem
+
+        /* Index is 1-based in NGAP (§9.3.1.152 INTEGER 1..8) */ //kassem
+        item->alternativeQoSParaSetIndex = (long)(j + 1); //kassem
+
+        if (alt->gbr.downlink) { //kassem
+            item->guaranteedFlowBitRateDL = //kassem
+                CALLOC(1, sizeof(NGAP_BitRate_t)); //kassem
+            ogs_assert(item->guaranteedFlowBitRateDL); //kassem
+            asn_uint642INTEGER(item->guaranteedFlowBitRateDL, //kassem
+                    alt->gbr.downlink); //kassem
+        } //kassem
+
+        if (alt->gbr.uplink) { //kassem
+            item->guaranteedFlowBitRateUL = //kassem
+                CALLOC(1, sizeof(NGAP_BitRate_t)); //kassem
+            ogs_assert(item->guaranteedFlowBitRateUL); //kassem
+            asn_uint642INTEGER(item->guaranteedFlowBitRateUL, //kassem
+                    alt->gbr.uplink); //kassem
+        } //kassem
+
+        ASN_SEQUENCE_ADD(&altList->list, item); //kassem
+        added++; //kassem
+
+        ogs_info("[ALT-QOS] index=%ld gbr_dl=%llu gbr_ul=%llu", //kassem
+                item->alternativeQoSParaSetIndex, //kassem
+                alt->gbr.downlink //kassem
+                    ? (unsigned long long)alt->gbr.downlink : 0ULL, //kassem
+                alt->gbr.uplink //kassem
+                    ? (unsigned long long)alt->gbr.uplink  : 0ULL); //kassem
+    } //kassem
+
+    ogs_info("[ALT-QOS] %d item(s) encoded in GBR iE_Extensions", added); //kassem
+} //kassem
 
 static void fill_qos_level_parameters(
     NGAP_QosFlowLevelQosParameters_t *params,
     const ogs_qos_t *qos,
-    bool include_gbr) 
+    bool include_gbr,
+    const ogs_pcc_rule_t *pcc_rule) 
 {
     NGAP_AllocationAndRetentionPriority_t
         *allocationAndRetentionPriority = NULL;
@@ -92,6 +198,14 @@ static void fill_qos_level_parameters(
             ogs_warn("************************************************[NGAP QNC] NotificationControl=requested added to QoS flow");
         } //kassem
 
+        if (qos->qnc && pcc_rule && //kassem
+                pcc_rule->num_of_alt_qos_param > 0) { //kassem
+            ogs_info("[ALT-QOS] Attaching %d alt profile(s) for 5QI=%d", //kassem
+                    pcc_rule->num_of_alt_qos_param, qos->index); //kassem
+            attach_alt_qos_params_list(params, //kassem
+                    pcc_rule->alt_qos_param, //kassem
+                    pcc_rule->num_of_alt_qos_param); //kassem
+        }
     } else if (include_gbr &&
                (qos->mbr.downlink || qos->mbr.uplink ||
                 qos->gbr.downlink || qos->gbr.uplink)) {
@@ -365,10 +479,11 @@ ogs_pkbuf_t *ngap_build_pdu_session_resource_setup_request_transfer(
 
         fill_qos_level_parameters(
                 &QosFlowSetupRequestItem->qosFlowLevelQosParameters,
-                &qos, true);
+                &qos, true, NULL); //kassem
 
     } else {
         ogs_list_for_each(&sess->bearer_list, qos_flow) {
+            
             QosFlowSetupRequestItem =
                 CALLOC(1, sizeof(struct NGAP_QosFlowSetupRequestItem));
             ogs_assert(QosFlowSetupRequestItem);
@@ -379,10 +494,12 @@ ogs_pkbuf_t *ngap_build_pdu_session_resource_setup_request_transfer(
 
             fill_qos_level_parameters(
                     &QosFlowSetupRequestItem->qosFlowLevelQosParameters,
-                    &qos_flow->qos, true);
+                    &qos_flow->qos, true,
+                    smf_pcc_rule_find_by_id(sess, qos_flow->pcc_rule.id));
+            
         }
     }
-
+    
     return ogs_asn_encode(
             &asn_DEF_NGAP_PDUSessionResourceSetupRequestTransfer, &message);
 }
@@ -500,7 +617,7 @@ ogs_pkbuf_t *ngap_build_pdu_session_resource_modify_request_transfer(
 
                     fill_qos_level_parameters(
                             QosFlowAddOrModifyRequestItem->
-                                qosFlowLevelQosParameters, &qos, true);
+                                qosFlowLevelQosParameters, &qos, true, NULL);
                 }
             }
         }
@@ -524,7 +641,8 @@ ogs_pkbuf_t *ngap_build_pdu_session_resource_modify_request_transfer(
 
             fill_qos_level_parameters(
                     QosFlowAddOrModifyRequestItem->qosFlowLevelQosParameters,
-                    &qos_flow->qos, include_gbr);
+                    &qos_flow->qos, include_gbr,
+                    smf_pcc_rule_find_by_id(sess, qos_flow->pcc_rule.id));
             
         }
     }

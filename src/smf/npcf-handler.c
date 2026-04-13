@@ -362,7 +362,9 @@ static void update_authorized_pcc_rule_and_qos(
                         OpenAPI_qos_data_t *d = NULL; //kassem
  
                         if (!m || !m->value) continue; //kassem
+
                         d = m->value; //kassem
+                        
                         if (!d->qos_id) continue; //kassem
                         if (strcmp(alt_qos_id, d->qos_id) != 0) continue; //kassem
  
