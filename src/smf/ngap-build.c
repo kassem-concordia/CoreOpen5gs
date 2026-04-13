@@ -107,7 +107,7 @@ static void fill_qos_level_parameters(
     
 }
 
-static void attach_alt_qos_params_list(NGAP_QosFlowLevelQosParameters_t *params,const ogs_qos_t *alt_params, int num_of_alt) //kassem
+static void attach_alt_qos_params_list(NGAP_QosFlowLevelQosParameters_t *params,const ogs_alt_qos_profile_t *alt_params, int num_of_alt) //kassem
 { //kassem
     NGAP_GBR_QosInformation_t *gbrInfo = NULL; //kassem
     NGAP_AlternativeQoSParaSetList_t *altList = NULL; //kassem

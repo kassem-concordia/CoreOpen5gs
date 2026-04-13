@@ -275,6 +275,7 @@ typedef struct smf_bearer_s {
     uint8_t pf_to_delete[OGS_MAX_NUM_OF_FLOW_IN_NAS];
 
     ogs_pool_id_t   sess_id;
+    
     int num_of_alt_qos_param; //kassem
     ogs_qos_t *alt_qos_param;
     bool qnc;
