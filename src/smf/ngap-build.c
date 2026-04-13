@@ -107,6 +107,72 @@ static void fill_qos_level_parameters(
     
 }
 
+static void attach_alt_qos_params_list(NGAP_QosFlowLevelQosParameters_t *params,const ogs_qos_t *alt_params, int num_of_alt) //kassem
+{ //kassem
+    NGAP_GBR_QosInformation_t *gbrInfo = NULL; //kassem
+    NGAP_AlternativeQoSParaSetList_t *altList = NULL; //kassem
+    int j; //kassem
+
+    if (!num_of_alt || !alt_params) return; //kassem
+
+    gbrInfo = params->gBR_QosInformation; //kassem
+    if (!gbrInfo) { //kassem
+        /* Should not happen: alt profiles only exist on GBR flows */
+        ogs_error("[ALT-QOS] gBR_QosInformation is NULL, " //kassem
+                  "cannot attach alt list"); //kassem
+        return; //kassem
+    } //kassem
+
+    altList = CALLOC(1, sizeof(*altList)); //kassem
+    ogs_assert(altList); //kassem
+    gbrInfo->alternativeQoSParaSetList = altList; //kassem
+
+    for (j = 0; j < num_of_alt; j++) { //kassem
+        const ogs_qos_t *alt = &alt_params[j]; //kassem
+        NGAP_AlternativeQoSParaSetItem_t *item = NULL; //kassem
+
+        item = CALLOC(1, sizeof(*item)); //kassem
+        ogs_assert(item); //kassem
+
+        /*
+         * NGAP index is 1-based (§9.3.1.152 INTEGER 1..8).
+         * PCF array is 0-based → add 1.
+         */ //kassem
+        item->alternativeQoSParaSetIndex = j + 1; //kassem
+
+        /*
+         * Per TS 38.413 §9.3.1.151, GBR DL and UL are optional at the
+         * item level (a profile may omit one direction).  We include them
+         * when non-zero.
+         */ //kassem
+        if (alt->gbr.downlink) { //kassem
+            item->guaranteedFlowBitRateDL = //kassem
+                CALLOC(1, sizeof(NGAP_BitRate_t)); //kassem
+            ogs_assert(item->guaranteedFlowBitRateDL); //kassem
+            asn_uint642INTEGER(item->guaranteedFlowBitRateDL, //kassem
+                    alt->gbr.downlink); //kassem
+        } //kassem
+
+        if (alt->gbr.uplink) { //kassem
+            item->guaranteedFlowBitRateUL = //kassem
+                CALLOC(1, sizeof(NGAP_BitRate_t)); //kassem
+            ogs_assert(item->guaranteedFlowBitRateUL); //kassem
+            asn_uint642INTEGER(item->guaranteedFlowBitRateUL, //kassem
+                    alt->gbr.uplink); //kassem
+        } //kassem
+
+        ASN_SEQUENCE_ADD(&altList->list, item); //kassem
+
+        ogs_info("[ALT-QOS] NGAP alt[%d] index=%d " //kassem
+                 "gbr_dl=%llu gbr_ul=%llu", //kassem
+                 j, item->alternativeQoSParaSetIndex, //kassem
+                 alt->gbr.downlink //kassem
+                     ? (unsigned long long)alt->gbr.downlink : 0ULL, //kassem
+                 alt->gbr.uplink //kassem
+                     ? (unsigned long long)alt->gbr.uplink  : 0ULL); //kassem
+    } //kassem
+} //kassem
+
 ogs_pkbuf_t *ngap_build_pdu_session_resource_setup_request_transfer(
         smf_sess_t *sess)
 {
@@ -380,6 +446,14 @@ ogs_pkbuf_t *ngap_build_pdu_session_resource_setup_request_transfer(
             fill_qos_level_parameters(
                     &QosFlowSetupRequestItem->qosFlowLevelQosParameters,
                     &qos_flow->qos, true);
+            
+            if (qos_flow->qos.qnc && 
+                    qos_flow->num_of_alt_qos_param > 0) { //kassem
+                attach_alt_qos_params_list( 
+                    &QosFlowSetupRequestItem->qosFlowLevelQosParameters, 
+                    qos_flow->alt_qos_param,
+                    qos_flow->num_of_alt_qos_param); //kassem
+            } //kassem
         }
     }
 
@@ -524,6 +598,14 @@ ogs_pkbuf_t *ngap_build_pdu_session_resource_modify_request_transfer(
             fill_qos_level_parameters(
                     QosFlowAddOrModifyRequestItem->qosFlowLevelQosParameters,
                     &qos_flow->qos, include_gbr);
+
+            if (include_gbr && qos_flow->qos.qnc && 
+                    qos_flow->num_of_alt_qos_param > 0) { 
+                attach_alt_qos_params_list( 
+                    QosFlowAddOrModifyRequestItem->qosFlowLevelQosParameters, 
+                    qos_flow->alt_qos_param, 
+                    qos_flow->num_of_alt_qos_param); 
+            } //kassem
         }
     }
 
