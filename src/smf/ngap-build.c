@@ -504,7 +504,7 @@ ogs_pkbuf_t *ngap_build_pdu_session_resource_setup_request_transfer(
                     ogs_info("[ALT-QOS]   rule[%d] id=%s num_alt=%d", //kassem
                             _pi, //kassem
                             _pr->id ? _pr->id : "(null)", //kassem
-                            _pr->num_of_alt_qos_param); //kassem
+                            _pr->num_of_alt_qos_profile); //kassem
                     if (_pr->id && //kassem
                         strcmp(_pr->id, qos_flow->pcc_rule.id) == 0 && //kassem
                         _pr->num_of_alt_qos_profile > 0) { //kassem
@@ -668,6 +668,7 @@ ogs_pkbuf_t *ngap_build_pdu_session_resource_modify_request_transfer(
             if (include_gbr && qos_flow->qnc && //kassem
                     qos_flow->pcc_rule.id) { //kassem
                 int _pi; //kassem
+                
                 ogs_info("[ALT-QOS] Modify: searching %d policy rules for id=%s", //kassem
                         sess->policy.num_of_pcc_rule, //kassem
                         qos_flow->pcc_rule.id); //kassem
@@ -678,7 +679,7 @@ ogs_pkbuf_t *ngap_build_pdu_session_resource_modify_request_transfer(
                         ogs_info("[ALT-QOS]   rule[%d] id=%s num_alt=%d", //kassem
                         _pi, //kassem
                         _pr->id ? _pr->id : "(null)", //kassem
-                        _pr->num_of_alt_qos_param); //kassem
+                        _pr->num_of_alt_qos_profile); //kassem
                     if (_pr->id && //kassem
                         strcmp(_pr->id, qos_flow->pcc_rule.id) == 0 && //kassem
                         _pr->num_of_alt_qos_profile > 0) { //kassem
