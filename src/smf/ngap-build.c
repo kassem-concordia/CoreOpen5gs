@@ -490,7 +490,7 @@ ogs_pkbuf_t *ngap_build_pdu_session_resource_setup_request_transfer(
             ogs_info("[ALT-QOS] Modify bearer QFI=%d qos.qnc=%d pcc_rule.id=%s", //kassem
                     qos_flow->qfi, qos_flow->qos.qnc, //kassem
                     qos_flow->pcc_rule.id ? qos_flow->pcc_rule.id : "(null)"); //kassem
-            if (include_gbr && qos_flow->qos.qnc && //kassem
+            if (qos_flow->qos.qnc && //kassem
                     qos_flow->pcc_rule.id) { //kassem
                 int _pi; //kassem
                 for (_pi = 0; //kassem
