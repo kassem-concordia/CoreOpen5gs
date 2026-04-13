@@ -496,7 +496,9 @@ ogs_pkbuf_t *ngap_build_pdu_session_resource_setup_request_transfer(
             fill_qos_level_parameters(
                     &QosFlowSetupRequestItem->qosFlowLevelQosParameters,
                     &qos_flow->qos, true,
-                    smf_pcc_rule_find_by_id(sess, qos_flow->pcc_rule.id));
+                    smf_pcc_rule_find_by_id(sess,  qos_flow->pcc_rule.id //kassem
+                        ? smf_pcc_rule_find_by_id(sess, qos_flow->pcc_rule.id) //kassem
+                        : NULL));
             
             
         }
@@ -644,7 +646,9 @@ ogs_pkbuf_t *ngap_build_pdu_session_resource_modify_request_transfer(
             fill_qos_level_parameters(
                     QosFlowAddOrModifyRequestItem->qosFlowLevelQosParameters,
                     &qos_flow->qos, include_gbr,
-                    smf_pcc_rule_find_by_id(sess, qos_flow->pcc_rule.id));
+                    smf_pcc_rule_find_by_id(sess,  qos_flow->pcc_rule.id //kassem
+                        ? smf_pcc_rule_find_by_id(sess, qos_flow->pcc_rule.id) //kassem
+                        : NULL));
         
             
         }
