@@ -31,7 +31,7 @@ static void fill_qos_level_parameters(
         *allocationAndRetentionPriority = NULL;
     NGAP_QosCharacteristics_t *qosCharacteristics = NULL;
     NGAP_NonDynamic5QIDescriptor_t *nonDynamic5QI = NULL;
-    ogs_warn("fill_qos_level_parameters called; include_gbr=%ld",include_gbr);
+    //ogs_warn("fill_qos_level_parameters called; include_gbr=%ld",include_gbr);
     /* Allocation and Retention Priority */
     allocationAndRetentionPriority =
         &params->allocationAndRetentionPriority;
@@ -163,13 +163,13 @@ static void attach_alt_qos_params_list(NGAP_QosFlowLevelQosParameters_t *params,
 
         ASN_SEQUENCE_ADD(&altList->list, item); //kassem
 
-        ogs_info("[ALT-QOS] NGAP alt[%d] index=%d " //kassem
-                 "gbr_dl=%llu gbr_ul=%llu", //kassem
-                 j, item->alternativeQoSParaSetIndex, //kassem
-                 alt->gbr.downlink //kassem
-                     ? (unsigned long long)alt->gbr.downlink : 0ULL, //kassem
-                 alt->gbr.uplink //kassem
-                     ? (unsigned long long)alt->gbr.uplink  : 0ULL); //kassem
+        // ogs_info("[ALT-QOS] NGAP alt[%d] index=%d " //kassem
+        //          "gbr_dl=%llu gbr_ul=%llu", //kassem
+        //          j, item->alternativeQoSParaSetIndex, //kassem
+        //          alt->gbr.downlink //kassem
+        //              ? (unsigned long long)alt->gbr.downlink : 0ULL, //kassem
+        //          alt->gbr.uplink //kassem
+        //              ? (unsigned long long)alt->gbr.uplink  : 0ULL); //kassem
     } //kassem
 } //kassem
 
@@ -459,7 +459,7 @@ ogs_pkbuf_t *ngap_build_pdu_session_resource_setup_request_transfer(
                         attach_alt_qos_params_list( //kassem
                             &QosFlowSetupRequestItem //kassem
                                 ->qosFlowLevelQosParameters, //kassem
-                            _pr->alt_qos_param, //kassem
+                            _pr->alt_qos_profile, //kassem
                             _pr->num_of_alt_qos_profile); //kassem
                         break; //kassem
                     } //kassem
@@ -623,7 +623,7 @@ ogs_pkbuf_t *ngap_build_pdu_session_resource_modify_request_transfer(
                         attach_alt_qos_params_list( //kassem
                             QosFlowAddOrModifyRequestItem //kassem
                                 ->qosFlowLevelQosParameters, //kassem
-                            _pr->alt_qos_param, //kassem
+                            _pr->alt_qos_profile, //kassem
                             _pr->num_of_alt_qos_profile); //kassem
                         break; //kassem
                     } //kassem
