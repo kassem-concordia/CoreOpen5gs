@@ -199,12 +199,12 @@ static void fill_qos_level_parameters(
         } //kassem
 
         if (qos->qnc && pcc_rule && //kassem
-                pcc_rule->num_of_alt_qos_param > 0) { //kassem
+                pcc_rule->num_of_alt_qos_profile > 0) { //kassem
             ogs_info("[ALT-QOS] Attaching %d alt profile(s) for 5QI=%d", //kassem
-                    pcc_rule->num_of_alt_qos_param, qos->index); //kassem
+                    pcc_rule->num_of_alt_qos_profile, qos->index); //kassem
             attach_alt_qos_params_list(params, //kassem
-                    pcc_rule->alt_qos_param, //kassem
-                    pcc_rule->num_of_alt_qos_param); //kassem
+                    pcc_rule->alt_qos_profile, //kassem
+                    pcc_rule->num_of_alt_qos_profile); //kassem
         }
     } else if (include_gbr &&
                (qos->mbr.downlink || qos->mbr.uplink ||
