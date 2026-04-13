@@ -491,11 +491,12 @@ ogs_pkbuf_t *ngap_build_pdu_session_resource_setup_request_transfer(
                 QosFlowSetupRequestItem);
 
             QosFlowSetupRequestItem->qosFlowIdentifier = qos_flow->qfi;
-
+            if(qos_flow->pcc_rule.id) {
             fill_qos_level_parameters(
                     &QosFlowSetupRequestItem->qosFlowLevelQosParameters,
                     &qos_flow->qos, true,
                     smf_pcc_rule_find_by_id(sess, qos_flow->pcc_rule.id));
+            }
             
         }
     }
@@ -638,11 +639,12 @@ ogs_pkbuf_t *ngap_build_pdu_session_resource_modify_request_transfer(
                     CALLOC(1, sizeof(NGAP_QosFlowLevelQosParameters_t));
             ogs_assert(
                     QosFlowAddOrModifyRequestItem->qosFlowLevelQosParameters);
-
+            if(qos_flow->pcc_rule.id) {
             fill_qos_level_parameters(
                     QosFlowAddOrModifyRequestItem->qosFlowLevelQosParameters,
                     &qos_flow->qos, include_gbr,
                     smf_pcc_rule_find_by_id(sess, qos_flow->pcc_rule.id));
+            }
             
         }
     }
