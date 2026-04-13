@@ -21,7 +21,7 @@
 
 static void attach_alt_qos_params_list( //kassem
         NGAP_QosFlowLevelQosParameters_t *params, //kassem
-        const ogs_qos_t *alt_params, //kassem
+        const ogs_alt_qos_profile_t *alt_params, //kassem
         int num_of_alt) //kassem
 { //kassem
     /*
