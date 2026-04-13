@@ -487,16 +487,24 @@ ogs_pkbuf_t *ngap_build_pdu_session_resource_setup_request_transfer(
             fill_qos_level_parameters(
                     &QosFlowSetupRequestItem->qosFlowLevelQosParameters,
                     &qos_flow->qos, true);
+
             ogs_info("[ALT-QOS] Modify bearer QFI=%d qos.qnc=%d pcc_rule.id=%s", //kassem
                     qos_flow->qfi, qos_flow->qos.qnc, //kassem
                     qos_flow->pcc_rule.id ? qos_flow->pcc_rule.id : "(null)"); //kassem
             if (qos_flow->qos.qnc && //kassem
                     qos_flow->pcc_rule.id) { //kassem
                 int _pi; //kassem
+                ogs_info("[ALT-QOS] Setup: searching %d policy rules for id=%s", //kassem
+                        sess->policy.num_of_pcc_rule, //kassem
+                        qos_flow->pcc_rule.id); //kassem
                 for (_pi = 0; //kassem
                      _pi < sess->policy.num_of_pcc_rule; _pi++) { //kassem
                     ogs_pcc_rule_t *_pr = //kassem
                         &sess->policy.pcc_rule[_pi]; //kassem
+                    ogs_info("[ALT-QOS]   rule[%d] id=%s num_alt=%d", //kassem
+                            _pi, //kassem
+                            _pr->id ? _pr->id : "(null)", //kassem
+                            _pr->num_of_alt_qos_param); //kassem
                     if (_pr->id && //kassem
                         strcmp(_pr->id, qos_flow->pcc_rule.id) == 0 && //kassem
                         _pr->num_of_alt_qos_profile > 0) { //kassem
@@ -650,6 +658,7 @@ ogs_pkbuf_t *ngap_build_pdu_session_resource_modify_request_transfer(
                     CALLOC(1, sizeof(NGAP_QosFlowLevelQosParameters_t));
             ogs_assert(
                     QosFlowAddOrModifyRequestItem->qosFlowLevelQosParameters);
+
             fill_qos_level_parameters(
                     QosFlowAddOrModifyRequestItem->qosFlowLevelQosParameters,
                     &qos_flow->qos, include_gbr);
@@ -659,10 +668,17 @@ ogs_pkbuf_t *ngap_build_pdu_session_resource_modify_request_transfer(
             if (include_gbr && qos_flow->qnc && //kassem
                     qos_flow->pcc_rule.id) { //kassem
                 int _pi; //kassem
+                ogs_info("[ALT-QOS] Modify: searching %d policy rules for id=%s", //kassem
+                        sess->policy.num_of_pcc_rule, //kassem
+                        qos_flow->pcc_rule.id); //kassem
                 for (_pi = 0; //kassem
                      _pi < sess->policy.num_of_pcc_rule; _pi++) { //kassem
                     ogs_pcc_rule_t *_pr = //kassem
                         &sess->policy.pcc_rule[_pi]; //kassem
+                        ogs_info("[ALT-QOS]   rule[%d] id=%s num_alt=%d", //kassem
+                        _pi, //kassem
+                        _pr->id ? _pr->id : "(null)", //kassem
+                        _pr->num_of_alt_qos_param); //kassem
                     if (_pr->id && //kassem
                         strcmp(_pr->id, qos_flow->pcc_rule.id) == 0 && //kassem
                         _pr->num_of_alt_qos_profile > 0) { //kassem
