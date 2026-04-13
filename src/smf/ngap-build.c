@@ -83,7 +83,7 @@ static void attach_alt_qos_params_list( //kassem
      * maxnoofQosParaSets = 8.
      */
     for (j = 0; j < num_of_alt && added < 8; j++) { //kassem
-        const ogs_qos_t *alt = &alt_params[j]; //kassem
+        const ogs_alt_qos_profile_t *alt = &alt_params[j]; //kassem
         NGAP_AlternativeQoSParaSetItem_t *item = NULL; //kassem
 
         if (!alt->gbr.downlink && !alt->gbr.uplink) //kassem
