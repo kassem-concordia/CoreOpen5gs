@@ -266,7 +266,7 @@ typedef struct smf_bearer_s {
     ogs_qos_t       qos;            /* QoS Information */
 
     OGS_POOL(pf_identifier_pool, uint8_t);
-    
+
     /* Packet Filter List */
     ogs_list_t      pf_list;
     ogs_list_t      pf_to_add_list;
@@ -277,7 +277,6 @@ typedef struct smf_bearer_s {
     ogs_pool_id_t   sess_id;
     int num_of_alt_qos_param; //kassem
     ogs_qos_t *alt_qos_param;
-    ogs_qos
 } smf_bearer_t;
 
 #define SMF_SESS(pfcp_sess) ogs_container_of(pfcp_sess, smf_sess_t, pfcp)
