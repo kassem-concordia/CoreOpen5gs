@@ -18,95 +18,6 @@
  */
 
 #include "ngap-build.h"
-
-/**
- * Fill common QoS flow level parameters: 5QI, ARP, and optional GBR/MBR.
- */
-static void fill_qos_level_parameters(
-    NGAP_QosFlowLevelQosParameters_t *params,
-    const ogs_qos_t *qos,
-    bool include_gbr) 
-{
-    NGAP_AllocationAndRetentionPriority_t
-        *allocationAndRetentionPriority = NULL;
-    NGAP_QosCharacteristics_t *qosCharacteristics = NULL;
-    NGAP_NonDynamic5QIDescriptor_t *nonDynamic5QI = NULL;
-    //ogs_warn("fill_qos_level_parameters called; include_gbr=%ld",include_gbr);
-    /* Allocation and Retention Priority */
-    allocationAndRetentionPriority =
-        &params->allocationAndRetentionPriority;
-
-    allocationAndRetentionPriority->priorityLevelARP = qos->arp.priority_level;
-    if (qos->arp.pre_emption_capability == OGS_5GC_PRE_EMPTION_ENABLED)
-        allocationAndRetentionPriority->pre_emptionCapability =
-            NGAP_Pre_emptionCapability_may_trigger_pre_emption;
-    if (qos->arp.pre_emption_vulnerability == OGS_5GC_PRE_EMPTION_ENABLED)
-        allocationAndRetentionPriority->pre_emptionVulnerability =
-            NGAP_Pre_emptionVulnerability_pre_emptable;
-
-    /* Non-Dynamic 5QI Descriptor */
-    qosCharacteristics = &params->qosCharacteristics;
-    qosCharacteristics->choice.nonDynamic5QI = nonDynamic5QI =
-        CALLOC(1, sizeof(struct NGAP_NonDynamic5QIDescriptor));
-    ogs_assert(nonDynamic5QI);
-    qosCharacteristics->present = NGAP_QosCharacteristics_PR_nonDynamic5QI;
-
-    nonDynamic5QI->fiveQI = qos->index;
-    ogs_warn("******************************************************[GBR CHECK] include_gbr=%d mbr_dl=%lld mbr_ul=%lld gbr_dl=%lld gbr_ul=%lld qnc=%d",
-            include_gbr,
-            (long long)qos->mbr.downlink,
-            (long long)qos->mbr.uplink,
-            (long long)qos->gbr.downlink,
-            (long long)qos->gbr.uplink,
-            qos->qnc);
-    /* Optional GBR/MBR Information */
-    if (include_gbr &&
-        qos->mbr.downlink && qos->mbr.uplink &&
-        qos->gbr.downlink && qos->gbr.uplink) {
-        NGAP_GBR_QosInformation_t *gBR_QosInformation =
-            params->gBR_QosInformation = CALLOC(1, sizeof(*gBR_QosInformation));
-        ogs_assert(gBR_QosInformation);
-
-        ogs_assert(qos->mbr.downlink <= OGS_MAX_BITRATE_NGAP);
-        ogs_assert(qos->mbr.uplink <= OGS_MAX_BITRATE_NGAP);
-        ogs_assert(qos->gbr.downlink <= OGS_MAX_BITRATE_NGAP);
-        ogs_assert(qos->gbr.uplink <= OGS_MAX_BITRATE_NGAP);
-
-        asn_uint642INTEGER(&gBR_QosInformation->maximumFlowBitRateDL,
-                qos->mbr.downlink);
-        asn_uint642INTEGER(&gBR_QosInformation->maximumFlowBitRateUL,
-                qos->mbr.uplink);
-        asn_uint642INTEGER(&gBR_QosInformation->
-                guaranteedFlowBitRateDL, qos->gbr.downlink);
-        asn_uint642INTEGER(&gBR_QosInformation->
-                guaranteedFlowBitRateUL, qos->gbr.uplink);
-
-        //kassem
-        
-        if (qos->qnc) {
-            gBR_QosInformation->notificationControl =
-                CALLOC(1, sizeof(NGAP_NotificationControl_t));
-            ogs_assert(gBR_QosInformation->notificationControl);
-
-            *(gBR_QosInformation->notificationControl) =
-                NGAP_NotificationControl_notification_requested;
-
-            ogs_warn("************************************************[NGAP QNC] NotificationControl=requested added to QoS flow");
-        } //kassem
-
-    } else if (include_gbr &&
-               (qos->mbr.downlink || qos->mbr.uplink ||
-                qos->gbr.downlink || qos->gbr.uplink)) {
-        ogs_error("Missing one or more MBR/GBR parameters; "
-                "defaulting to Non-GBR flow ");
-        ogs_error("    MBR[DL:%lld,UL:%lld]",
-            (long long)qos->mbr.downlink, (long long)qos->mbr.uplink);
-        ogs_error("    GBR[DL:%lld,UL:%lld]",
-            (long long)qos->gbr.downlink, (long long)qos->gbr.uplink);
-    }
-    
-}
-
 static void attach_alt_qos_params_list( //kassem
         NGAP_QosFlowLevelQosParameters_t *params, //kassem
         const ogs_alt_qos_profile_t *alt_params, //kassem
@@ -212,6 +123,96 @@ static void attach_alt_qos_params_list( //kassem
  
     ogs_info("**********[ALT-QOS] %d item(s) encoded in GBR iE_Extensions", added); //kassem
 } //kassem
+/**
+ * Fill common QoS flow level parameters: 5QI, ARP, and optional GBR/MBR.
+ */
+
+static void fill_qos_level_parameters(
+    NGAP_QosFlowLevelQosParameters_t *params,
+    const ogs_qos_t *qos,
+    bool include_gbr) 
+{
+    NGAP_AllocationAndRetentionPriority_t
+        *allocationAndRetentionPriority = NULL;
+    NGAP_QosCharacteristics_t *qosCharacteristics = NULL;
+    NGAP_NonDynamic5QIDescriptor_t *nonDynamic5QI = NULL;
+    //ogs_warn("fill_qos_level_parameters called; include_gbr=%ld",include_gbr);
+    /* Allocation and Retention Priority */
+    allocationAndRetentionPriority =
+        &params->allocationAndRetentionPriority;
+
+    allocationAndRetentionPriority->priorityLevelARP = qos->arp.priority_level;
+    if (qos->arp.pre_emption_capability == OGS_5GC_PRE_EMPTION_ENABLED)
+        allocationAndRetentionPriority->pre_emptionCapability =
+            NGAP_Pre_emptionCapability_may_trigger_pre_emption;
+    if (qos->arp.pre_emption_vulnerability == OGS_5GC_PRE_EMPTION_ENABLED)
+        allocationAndRetentionPriority->pre_emptionVulnerability =
+            NGAP_Pre_emptionVulnerability_pre_emptable;
+
+    /* Non-Dynamic 5QI Descriptor */
+    qosCharacteristics = &params->qosCharacteristics;
+    qosCharacteristics->choice.nonDynamic5QI = nonDynamic5QI =
+        CALLOC(1, sizeof(struct NGAP_NonDynamic5QIDescriptor));
+    ogs_assert(nonDynamic5QI);
+    qosCharacteristics->present = NGAP_QosCharacteristics_PR_nonDynamic5QI;
+
+    nonDynamic5QI->fiveQI = qos->index;
+    ogs_warn("******************************************************[GBR CHECK] include_gbr=%d mbr_dl=%lld mbr_ul=%lld gbr_dl=%lld gbr_ul=%lld qnc=%d",
+            include_gbr,
+            (long long)qos->mbr.downlink,
+            (long long)qos->mbr.uplink,
+            (long long)qos->gbr.downlink,
+            (long long)qos->gbr.uplink,
+            qos->qnc);
+    /* Optional GBR/MBR Information */
+    if (include_gbr &&
+        qos->mbr.downlink && qos->mbr.uplink &&
+        qos->gbr.downlink && qos->gbr.uplink) {
+        NGAP_GBR_QosInformation_t *gBR_QosInformation =
+            params->gBR_QosInformation = CALLOC(1, sizeof(*gBR_QosInformation));
+        ogs_assert(gBR_QosInformation);
+
+        ogs_assert(qos->mbr.downlink <= OGS_MAX_BITRATE_NGAP);
+        ogs_assert(qos->mbr.uplink <= OGS_MAX_BITRATE_NGAP);
+        ogs_assert(qos->gbr.downlink <= OGS_MAX_BITRATE_NGAP);
+        ogs_assert(qos->gbr.uplink <= OGS_MAX_BITRATE_NGAP);
+
+        asn_uint642INTEGER(&gBR_QosInformation->maximumFlowBitRateDL,
+                qos->mbr.downlink);
+        asn_uint642INTEGER(&gBR_QosInformation->maximumFlowBitRateUL,
+                qos->mbr.uplink);
+        asn_uint642INTEGER(&gBR_QosInformation->
+                guaranteedFlowBitRateDL, qos->gbr.downlink);
+        asn_uint642INTEGER(&gBR_QosInformation->
+                guaranteedFlowBitRateUL, qos->gbr.uplink);
+
+        //kassem
+        
+        if (qos->qnc) {
+            gBR_QosInformation->notificationControl =
+                CALLOC(1, sizeof(NGAP_NotificationControl_t));
+            ogs_assert(gBR_QosInformation->notificationControl);
+
+            *(gBR_QosInformation->notificationControl) =
+                NGAP_NotificationControl_notification_requested;
+
+            ogs_warn("************************************************[NGAP QNC] NotificationControl=requested added to QoS flow");
+        } //kassem
+
+    } else if (include_gbr &&
+               (qos->mbr.downlink || qos->mbr.uplink ||
+                qos->gbr.downlink || qos->gbr.uplink)) {
+        ogs_error("Missing one or more MBR/GBR parameters; "
+                "defaulting to Non-GBR flow ");
+        ogs_error("    MBR[DL:%lld,UL:%lld]",
+            (long long)qos->mbr.downlink, (long long)qos->mbr.uplink);
+        ogs_error("    GBR[DL:%lld,UL:%lld]",
+            (long long)qos->gbr.downlink, (long long)qos->gbr.uplink);
+    }
+    
+}
+
+
 
 ogs_pkbuf_t *ngap_build_pdu_session_resource_setup_request_transfer(
         smf_sess_t *sess)
@@ -486,8 +487,11 @@ ogs_pkbuf_t *ngap_build_pdu_session_resource_setup_request_transfer(
             fill_qos_level_parameters(
                     &QosFlowSetupRequestItem->qosFlowLevelQosParameters,
                     &qos_flow->qos, true);
-            
-            if (qos_flow->qnc && qos_flow->pcc_rule.id) { //kassem
+            ogs_info("[ALT-QOS] Modify bearer QFI=%d qos.qnc=%d pcc_rule.id=%s", //kassem
+                    qos_flow->qfi, qos_flow->qos.qnc, //kassem
+                    qos_flow->pcc_rule.id ? qos_flow->pcc_rule.id : "(null)"); //kassem
+            if (include_gbr && qos_flow->qos.qnc && //kassem
+                    qos_flow->pcc_rule.id) { //kassem
                 int _pi; //kassem
                 for (_pi = 0; //kassem
                      _pi < sess->policy.num_of_pcc_rule; _pi++) { //kassem
@@ -649,7 +653,9 @@ ogs_pkbuf_t *ngap_build_pdu_session_resource_modify_request_transfer(
             fill_qos_level_parameters(
                     QosFlowAddOrModifyRequestItem->qosFlowLevelQosParameters,
                     &qos_flow->qos, include_gbr);
-
+            ogs_info("[ALT-QOS] Modify bearer QFI=%d qos.qnc=%d pcc_rule.id=%s", //kassem
+                    qos_flow->qfi, qos_flow->qos.qnc, //kassem
+                    qos_flow->pcc_rule.id ? qos_flow->pcc_rule.id : "(null)"); //kassem
             if (include_gbr && qos_flow->qnc && //kassem
                     qos_flow->pcc_rule.id) { //kassem
                 int _pi; //kassem
