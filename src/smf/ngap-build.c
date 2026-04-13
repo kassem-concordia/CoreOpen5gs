@@ -107,44 +107,61 @@ static void fill_qos_level_parameters(
     
 }
 
-static void attach_alt_qos_params_list(NGAP_QosFlowLevelQosParameters_t *params,const ogs_alt_qos_profile_t *alt_params, int num_of_alt) //kassem
+static void attach_alt_qos_params_list( //kassem
+        NGAP_GBR_QosInformation_t *gBR_QosInformation, //kassem
+        const ogs_alt_qos_profile_t *alt_params, //kassem
+        int num_of_alt) //kassem
 { //kassem
-    NGAP_GBR_QosInformation_t *gbrInfo = NULL; //kassem
+    struct NGAP_GBR_QosInformation__iE_Extensions *extContainer = NULL; //kassem
+    NGAP_GBR_QosInformation_ExtIEs_t *extIe = NULL; //kassem
     NGAP_AlternativeQoSParaSetList_t *altList = NULL; //kassem
-    int j; //kassem
+    int j, added = 0; //kassem
 
-    if (!num_of_alt || !alt_params) return; //kassem
-
-    gbrInfo = params->gBR_QosInformation; //kassem
-    if (!gbrInfo) { //kassem
-        /* Should not happen: alt profiles only exist on GBR flows */
-        ogs_error("[ALT-QOS] gBR_QosInformation is NULL, " //kassem
-                  "cannot attach alt list"); //kassem
+    if (!gBR_QosInformation || !alt_params || num_of_alt <= 0) //kassem
         return; //kassem
-    } //kassem
 
-    altList = CALLOC(1, sizeof(*altList)); //kassem
-    ogs_assert(altList); //kassem
-    gbrInfo->alternativeQoSParaSetList = altList; //kassem
+    /*
+     * Step 1 — allocate the iE-Extensions container and wire it in.
+     * Cast to generic base pointer, same as SecurityIndication->iE_Extensions.
+     */
+    extContainer = CALLOC(1, sizeof(*extContainer)); //kassem
+    ogs_assert(extContainer); //kassem
+    gBR_QosInformation->iE_Extensions = //kassem
+        (struct NGAP_ProtocolExtensionContainer *)extContainer; //kassem
 
-    for (j = 0; j < num_of_alt; j++) { //kassem
+    /* Step 2 — allocate the ExtIEs item carrying AlternativeQoSParaSetList */
+    extIe = CALLOC(1, sizeof(*extIe)); //kassem
+    ogs_assert(extIe); //kassem
+    ASN_SEQUENCE_ADD(&extContainer->list, extIe); //kassem
+
+    extIe->id          = NGAP_ProtocolIE_ID_id_AlternativeQoSParaSetList; //kassem
+    extIe->criticality = NGAP_Criticality_ignore; //kassem
+    extIe->extensionValue.present = //kassem
+        NGAP_GBR_QosInformation_ExtIEs__extensionValue_PR_AlternativeQoSParaSetList; //kassem
+
+    altList = &extIe->extensionValue.choice.AlternativeQoSParaSetList; //kassem
+
+    /*
+     * Step 3 — build AlternativeQoSParaSetItem entries.
+     *
+     * TS 38.413 §9.3.1.151:
+     *   alternativeQoSParaSetIndex  M  INTEGER 1..8  (1-based, §9.3.1.152)
+     *   guaranteedFlowBitRateDL     O  BitRate
+     *   guaranteedFlowBitRateUL     O  BitRate
+     * maxnoofQosParaSets = 8.
+     */
+    for (j = 0; j < num_of_alt && added < 8; j++) { //kassem
         const ogs_alt_qos_profile_t *alt = &alt_params[j]; //kassem
         NGAP_AlternativeQoSParaSetItem_t *item = NULL; //kassem
+
+        if (!alt->gbr.downlink && !alt->gbr.uplink) //kassem
+            continue; //kassem
 
         item = CALLOC(1, sizeof(*item)); //kassem
         ogs_assert(item); //kassem
 
-        /*
-         * NGAP index is 1-based (§9.3.1.152 INTEGER 1..8).
-         * PCF array is 0-based → add 1.
-         */ //kassem
-        item->alternativeQoSParaSetIndex = j + 1; //kassem
+        item->alternativeQoSParaSetIndex = (long)(j + 1); //kassem
 
-        /*
-         * Per TS 38.413 §9.3.1.151, GBR DL and UL are optional at the
-         * item level (a profile may omit one direction).  We include them
-         * when non-zero.
-         */ //kassem
         if (alt->gbr.downlink) { //kassem
             item->guaranteedFlowBitRateDL = //kassem
                 CALLOC(1, sizeof(NGAP_BitRate_t)); //kassem
@@ -162,15 +179,17 @@ static void attach_alt_qos_params_list(NGAP_QosFlowLevelQosParameters_t *params,
         } //kassem
 
         ASN_SEQUENCE_ADD(&altList->list, item); //kassem
+        added++; //kassem
 
-        // ogs_info("[ALT-QOS] NGAP alt[%d] index=%d " //kassem
-        //          "gbr_dl=%llu gbr_ul=%llu", //kassem
-        //          j, item->alternativeQoSParaSetIndex, //kassem
-        //          alt->gbr.downlink //kassem
-        //              ? (unsigned long long)alt->gbr.downlink : 0ULL, //kassem
-        //          alt->gbr.uplink //kassem
-        //              ? (unsigned long long)alt->gbr.uplink  : 0ULL); //kassem
+        ogs_info("[ALT-QOS] index=%ld gbr_dl=%llu gbr_ul=%llu", //kassem
+                item->alternativeQoSParaSetIndex, //kassem
+                alt->gbr.downlink //kassem
+                    ? (unsigned long long)alt->gbr.downlink : 0ULL, //kassem
+                alt->gbr.uplink //kassem
+                    ? (unsigned long long)alt->gbr.uplink  : 0ULL); //kassem
     } //kassem
+
+    ogs_info("**********[ALT-QOS] %d item(s) encoded in GBR iE_Extensions", added); //kassem
 } //kassem
 
 ogs_pkbuf_t *ngap_build_pdu_session_resource_setup_request_transfer(
