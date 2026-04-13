@@ -128,7 +128,7 @@ static void attach_alt_qos_params_list(NGAP_QosFlowLevelQosParameters_t *params,
     gbrInfo->alternativeQoSParaSetList = altList; //kassem
 
     for (j = 0; j < num_of_alt; j++) { //kassem
-        const ogs_qos_t *alt = &alt_params[j]; //kassem
+        const ogs_alt_qos_profile_t *alt = &alt_params[j]; //kassem
         NGAP_AlternativeQoSParaSetItem_t *item = NULL; //kassem
 
         item = CALLOC(1, sizeof(*item)); //kassem
