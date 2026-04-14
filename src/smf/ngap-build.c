@@ -38,7 +38,7 @@ static void attach_alt_qos_params_list( //kassem
         ogs_error("[ALT-QOS] gBR_QosInformation is NULL, cannot attach list"); //kassem
         return; //kassem
     } //kassem
- 
+    return;
     altList = CALLOC(1, sizeof(*altList)); //kassem
     ogs_assert(altList); //kassem
  
