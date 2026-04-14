@@ -8,6 +8,7 @@
 #include "NGAP_GBR-QosInformation.h"
 
 #include "NGAP_ProtocolExtensionContainer.h"
+#include "NGAP_AlternativeQoSParaSetList.h" //kassem
 asn_TYPE_member_t asn_MBR_NGAP_GBR_QosInformation_1[] = {
 	{ ATF_NOFLAGS, 0, offsetof(struct NGAP_GBR_QosInformation, maximumFlowBitRateDL),
 		(ASN_TAG_CLASS_CONTEXT | (0 << 2)),
@@ -145,8 +146,25 @@ asn_TYPE_member_t asn_MBR_NGAP_GBR_QosInformation_1[] = {
 		0, 0, /* No default value */
 		"iE-Extensions"
 		},
+		{ ATF_POINTER, 1, offsetof(struct NGAP_GBR_QosInformation, alternativeQoSParaSetList), //kassem
+                (ASN_TAG_CLASS_CONTEXT | (8 << 2)), //kassem
+                -1,     /* IMPLICIT tag at current level */ //kassem
+                &asn_DEF_NGAP_AlternativeQoSParaSetList, //kassem
+                0, //kassem
+                { //kassem
+#if !defined(ASN_DISABLE_OER_SUPPORT)
+                        0, //kassem
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
+                        0, //kassem
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+                        0 //kassem
+                }, //kassem
+                0, 0, /* No default value */ //kassem
+                "alternativeQoSParaSetList" //kassem
+                }, //kassem
 };
-static const int asn_MAP_NGAP_GBR_QosInformation_oms_1[] = { 4, 5, 6, 7 };
+static const int asn_MAP_NGAP_GBR_QosInformation_oms_1[] = { 4, 5, 6, 7, 8 }; //kassem 8
 static const ber_tlv_tag_t asn_DEF_NGAP_GBR_QosInformation_tags_1[] = {
 	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
 };
@@ -159,14 +177,15 @@ static const asn_TYPE_tag2member_t asn_MAP_NGAP_GBR_QosInformation_tag2el_1[] = 
     { (ASN_TAG_CLASS_CONTEXT | (5 << 2)), 5, 0, 0 }, /* maximumPacketLossRateDL */
     { (ASN_TAG_CLASS_CONTEXT | (6 << 2)), 6, 0, 0 }, /* maximumPacketLossRateUL */
     { (ASN_TAG_CLASS_CONTEXT | (7 << 2)), 7, 0, 0 } /* iE-Extensions */
+	{ (ASN_TAG_CLASS_CONTEXT | (8 << 2)), 8, 0, 0 }  /* alternativeQoSParaSetList */ //kassem
 };
 asn_SEQUENCE_specifics_t asn_SPC_NGAP_GBR_QosInformation_specs_1 = {
 	sizeof(struct NGAP_GBR_QosInformation),
 	offsetof(struct NGAP_GBR_QosInformation, _asn_ctx),
 	asn_MAP_NGAP_GBR_QosInformation_tag2el_1,
-	8,	/* Count of tags in the map */
+	9,	/* Count of tags in the map kassem was 8*/
 	asn_MAP_NGAP_GBR_QosInformation_oms_1,	/* Optional members */
-	4, 0,	/* Root/Additions */
+	4, 1,	/* Root/Additions kassem was 0*/
 	8,	/* First extension addition */
 };
 asn_TYPE_descriptor_t asn_DEF_NGAP_GBR_QosInformation = {
@@ -189,7 +208,7 @@ asn_TYPE_descriptor_t asn_DEF_NGAP_GBR_QosInformation = {
 		SEQUENCE_constraint
 	},
 	asn_MBR_NGAP_GBR_QosInformation_1,
-	8,	/* Elements count */
+	9,	/* Elements count kassem was 8*/
 	&asn_SPC_NGAP_GBR_QosInformation_specs_1	/* Additional specs */
 };
 
