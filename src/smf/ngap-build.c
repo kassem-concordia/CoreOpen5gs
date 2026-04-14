@@ -90,6 +90,7 @@ static void attach_alt_qos_params_list( //kassem
         gBR_QosInformation->alternativeQoSParaSetList //kassem
             ? gBR_QosInformation->alternativeQoSParaSetList->list.count //kassem
             : -1); //kassem
+    gBR_QosInformation->alternativeQoSParaSetList = NULL;
 } //kassem
 
 static void fill_qos_level_parameters(
