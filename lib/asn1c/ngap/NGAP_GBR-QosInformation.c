@@ -176,7 +176,7 @@ static const asn_TYPE_tag2member_t asn_MAP_NGAP_GBR_QosInformation_tag2el_1[] = 
     { (ASN_TAG_CLASS_CONTEXT | (4 << 2)), 4, 0, 0 }, /* notificationControl */
     { (ASN_TAG_CLASS_CONTEXT | (5 << 2)), 5, 0, 0 }, /* maximumPacketLossRateDL */
     { (ASN_TAG_CLASS_CONTEXT | (6 << 2)), 6, 0, 0 }, /* maximumPacketLossRateUL */
-    { (ASN_TAG_CLASS_CONTEXT | (7 << 2)), 7, 0, 0 } /* iE-Extensions */
+    { (ASN_TAG_CLASS_CONTEXT | (7 << 2)), 7, 0, 0 }, /* iE-Extensions */
 	{ (ASN_TAG_CLASS_CONTEXT | (8 << 2)), 8, 0, 0 }  /* alternativeQoSParaSetList */ //kassem
 };
 asn_SEQUENCE_specifics_t asn_SPC_NGAP_GBR_QosInformation_specs_1 = {
