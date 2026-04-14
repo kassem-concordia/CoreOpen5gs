@@ -185,7 +185,7 @@ asn_SEQUENCE_specifics_t asn_SPC_NGAP_GBR_QosInformation_specs_1 = {
 	asn_MAP_NGAP_GBR_QosInformation_tag2el_1,
 	9,	/* Count of tags in the map kassem was 8*/
 	asn_MAP_NGAP_GBR_QosInformation_oms_1,	/* Optional members */
-	4, 1,	/* Root/Additions kassem was 0*/
+	5, 1,	/* Root/Additions kassem was 0*/
 	8,	/* First extension addition */
 };
 asn_TYPE_descriptor_t asn_DEF_NGAP_GBR_QosInformation = {
