@@ -38,10 +38,10 @@ static void attach_alt_qos_params_list( //kassem
         ogs_error("[ALT-QOS] gBR_QosInformation is NULL, cannot attach list"); //kassem
         return; //kassem
     } //kassem
-    return;
+    
     altList = CALLOC(1, sizeof(*altList)); //kassem
     ogs_assert(altList); //kassem
- 
+    
     for (j = 0; j < num_of_alt && added < 8; j++) { //kassem
         const ogs_alt_qos_profile_t *alt = &alt_params[j]; //kassem
         NGAP_AlternativeQoSParaSetItem_t *item = NULL; //kassem
