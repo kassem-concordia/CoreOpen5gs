@@ -24,6 +24,7 @@ static void attach_alt_qos_params_list( //kassem
         const ogs_alt_qos_profile_t *alt_params, //kassem
         int num_of_alt) //kassem
 { //kassem
+    NGAP_ProtocolExtensionContainer_10696P76_t t;
     NGAP_GBR_QosInformation_t *gBR_QosInformation = NULL; //kassem
     NGAP_AlternativeQoSParaSetList_t *altList = NULL; //kassem
     int j, added = 0; //kassem
@@ -82,6 +83,13 @@ static void attach_alt_qos_params_list( //kassem
     } //kassem
     gBR_QosInformation->alternativeQoSParaSetList = altList;
     ogs_info("[ALT-QOS] %d item(s) attached to alternativeQoSParaSetList", added); //kassem
+    ogs_info("****************************[ALT-QOS] altList ptr=%p count=%d", //kassem
+        (void *)altList, altList ? altList->list.count : -1); //kassem
+    ogs_info("*************************[ALT-QOS] gBR_QosInformation->alternativeQoSParaSetList ptr=%p count=%d", //kassem
+        (void *)gBR_QosInformation->alternativeQoSParaSetList, //kassem
+        gBR_QosInformation->alternativeQoSParaSetList //kassem
+            ? gBR_QosInformation->alternativeQoSParaSetList->list.count //kassem
+            : -1); //kassem
 } //kassem
 
 static void fill_qos_level_parameters(
