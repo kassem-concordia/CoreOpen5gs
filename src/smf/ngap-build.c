@@ -24,7 +24,7 @@ static void attach_alt_qos_params_list( //kassem
         const ogs_alt_qos_profile_t *alt_params, //kassem
         int num_of_alt) //kassem
 { //kassem
-    NGAP_ProtocolExtensionContainer_10696P76_t t;
+    
     NGAP_GBR_QosInformation_t *gBR_QosInformation = NULL; //kassem
     NGAP_AlternativeQoSParaSetList_t *altList = NULL; //kassem
     int j, added = 0; //kassem
