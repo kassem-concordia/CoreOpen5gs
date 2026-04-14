@@ -40,7 +40,7 @@ typedef struct NGAP_AlternativeQoSParaSetItem {
 	
 	/* Context for parsing across buffer boundaries */
 	asn_struct_ctx_t _asn_ctx;
-} NGAP_AlternativeQoSParaSetItem_t;
+} NGA     
 
 /* Implementation */
 extern asn_TYPE_descriptor_t asn_DEF_NGAP_AlternativeQoSParaSetItem;
