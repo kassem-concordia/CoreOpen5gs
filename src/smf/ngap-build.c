@@ -31,25 +31,15 @@ static void attach_alt_qos_params_list( //kassem
     if (!params || !alt_params || num_of_alt <= 0) //kassem
         return; //kassem
  
-    /*
-     * gBR_QosInformation was already allocated by fill_qos_level_parameters().
-     * We just retrieve the pointer — do NOT allocate a new one here.
-     */ //kassem
+    
     gBR_QosInformation = params->gBR_QosInformation; //kassem
     if (!gBR_QosInformation) { //kassem
         ogs_error("[ALT-QOS] gBR_QosInformation is NULL, cannot attach list"); //kassem
         return; //kassem
     } //kassem
  
-    /*
-     * TS 38.413 §9.3.1.151 — AlternativeQoSParaSetList
-     *
-     * Allocate the list and assign it to gBR_QosInformation->alternativeQoSParaSetList
-     * so the ASN.1 encoder picks it up.
-     */ //kassem
     altList = CALLOC(1, sizeof(*altList)); //kassem
     ogs_assert(altList); //kassem
-    gBR_QosInformation->alternativeQoSParaSetList = altList; //kassem
  
     for (j = 0; j < num_of_alt && added < 8; j++) { //kassem
         const ogs_alt_qos_profile_t *alt = &alt_params[j]; //kassem
@@ -90,7 +80,7 @@ static void attach_alt_qos_params_list( //kassem
                 alt->gbr.uplink //kassem
                     ? (unsigned long long)alt->gbr.uplink  : 0ULL); //kassem
     } //kassem
- 
+    gBR_QosInformation->alternativeQoSParaSetList = altList;
     ogs_info("[ALT-QOS] %d item(s) attached to alternativeQoSParaSetList", added); //kassem
 } //kassem
 
