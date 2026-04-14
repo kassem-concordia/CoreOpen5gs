@@ -21,7 +21,7 @@
 
 static void attach_alt_qos_params_list( //kassem
         NGAP_QosFlowLevelQosParameters_t *params, //kassem
-        const ogs_qos_t *alt_params, //kassem
+        const ogs_alt_qos_profile_t *alt_params, //kassem
         int num_of_alt) //kassem
 { //kassem
     NGAP_ProtocolExtensionContainer_11905P96_t *extContainer = NULL; //kassem
@@ -60,7 +60,7 @@ static void attach_alt_qos_params_list( //kassem
  
     /* Step 4: build AlternativeQoSParaSetItem entries */ //kassem
     for (j = 0; j < num_of_alt && added < 8; j++) { //kassem
-        const ogs_qos_t *alt = &alt_params[j]; //kassem
+        const ogs_alt_qos_profile_t *alt = &alt_params[j]; //kassem
         NGAP_AlternativeQoSParaSetItem_t *item = NULL; //kassem
  
         if (!alt->gbr.downlink && !alt->gbr.uplink) //kassem
