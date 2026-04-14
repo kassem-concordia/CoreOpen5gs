@@ -128,7 +128,7 @@
 static void fill_qos_level_parameters(
     NGAP_QosFlowLevelQosParameters_t *params,
     const ogs_qos_t *qos,
-    bool include_gbr,)
+    bool include_gbr)
     //const ogs_pcc_rule_t *pcc_rule) 
 {
     NGAP_AllocationAndRetentionPriority_t
@@ -206,7 +206,7 @@ static void fill_qos_level_parameters(
         //     attach_alt_qos_params_list(params, //kassem
         //             pcc_rule->alt_qos_profile, //kassem
         //             pcc_rule->num_of_alt_qos_profile); //kassem
-        }
+        //}
     } else if (include_gbr &&
                (qos->mbr.downlink || qos->mbr.uplink ||
                 qos->gbr.downlink || qos->gbr.uplink)) {
