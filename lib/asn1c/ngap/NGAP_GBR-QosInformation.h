@@ -34,8 +34,8 @@ typedef struct NGAP_GBR_QosInformation {
 	NGAP_NotificationControl_t	*notificationControl;	/* OPTIONAL */
 	NGAP_PacketLossRate_t	*maximumPacketLossRateDL;	/* OPTIONAL */
 	NGAP_PacketLossRate_t	*maximumPacketLossRateUL;	/* OPTIONAL */
-	NGAP_AlternativeQoSParaSetList_t *alternativeQoSParaSetList;	//kassem
 	struct NGAP_ProtocolExtensionContainer	*iE_Extensions;	/* OPTIONAL */
+	NGAP_AlternativeQoSParaSetList_t *alternativeQoSParaSetList;	//kassem
 	/*
 	 * This type is extensible,
 	 * possible extensions are below.
