@@ -465,13 +465,13 @@ end:
 ogs_sbi_request_t *smf_npcf_smpolicycontrol_build_update( //kassem
         smf_sess_t *sess, void *data) //kassem
 { //kassem
+    /* kassem: Send POST to {policy_resource_uri}/update to notify PCF.
+     * ogs_sbi_message_t has no SmPolicyUpdateContextData field, so we
+     * send a minimal POST with no body. The PCF receives the request
+     * on the /update endpoint and logs/acknowledges it with 204. */
     smf_ue_t *smf_ue = NULL; //kassem
- 
     ogs_sbi_message_t message; //kassem
     ogs_sbi_request_t *request = NULL; //kassem
- 
-    OpenAPI_sm_policy_context_data_t SmPolicyContextData; //kassem
-    OpenAPI_list_t *PolicyCtrlReqTriggers = NULL; //kassem
  
     ogs_assert(sess); //kassem
     ogs_assert(sess->policy_association.resource_uri); //kassem
@@ -484,37 +484,16 @@ ogs_sbi_request_t *smf_npcf_smpolicycontrol_build_update( //kassem
             sess->policy_association.resource_uri, //kassem
             OGS_SBI_RESOURCE_NAME_UPDATE); //kassem
     if (!message.h.uri) { //kassem
-        ogs_error("No message.h.uri"); //kassem
-        goto end; //kassem
+        ogs_error("[QNC] No message.h.uri"); //kassem
+        return NULL; //kassem
     } //kassem
- 
-    memset(&SmPolicyContextData, 0, sizeof(SmPolicyContextData)); //kassem
- 
-    /* Add QOS_NOTIF trigger (QNC notification per TS 29.512) */ //kassem
-    PolicyCtrlReqTriggers = OpenAPI_list_create(); //kassem
-    if (!PolicyCtrlReqTriggers) { //kassem
-        ogs_error("No PolicyCtrlReqTriggers"); //kassem
-        goto end; //kassem
-    } //kassem
-    OpenAPI_list_add(PolicyCtrlReqTriggers, //kassem
-        (void *)OpenAPI_policy_control_request_trigger_QOS_NOTIF); //kassem
- 
-    SmPolicyContextData.policy_ctrl_req_triggers = PolicyCtrlReqTriggers; //kassem
  
     ogs_info("[QNC] Sending Npcf_SMPolicyControl_Update " //kassem
-             "supi[%s] psi[%d] trigger=QOS_NOTIF", //kassem
-             smf_ue->supi, sess->psi); //kassem
- 
-    message.SmPolicyContextData = &SmPolicyContextData; //kassem
+             "supi[%s] psi[%d]", smf_ue->supi, sess->psi); //kassem
  
     request = ogs_sbi_build_request(&message); //kassem
     ogs_expect(request); //kassem
  
-end: //kassem
-    if (message.h.uri) //kassem
-        ogs_free(message.h.uri); //kassem
-    if (PolicyCtrlReqTriggers) //kassem
-        OpenAPI_list_free(PolicyCtrlReqTriggers); //kassem
- 
+    ogs_free(message.h.uri); //kassem
     return request; //kassem
 } //kassem
