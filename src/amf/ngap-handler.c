@@ -4933,3 +4933,199 @@ void ngap_handle_error_indication(amf_gnb_t *gnb, ogs_ngap_message_t *message)
         }
     }
 }
+
+
+
+void ngap_handle_pdu_session_resource_notify( //kassem
+        amf_gnb_t *gnb, ogs_ngap_message_t *message) //kassem
+{ //kassem
+    char buf[OGS_ADDRSTRLEN]; //kassem
+    int i, r; //kassem
+ 
+    amf_ue_t *amf_ue = NULL; //kassem
+    ran_ue_t *ran_ue = NULL; //kassem
+    uint64_t amf_ue_ngap_id; //kassem
+    amf_nsmf_pdusession_sm_context_param_t param; //kassem
+ 
+    NGAP_InitiatingMessage_t *initiatingMessage = NULL; //kassem
+    NGAP_PDUSessionResourceNotify_t *PDUSessionResourceNotify; //kassem
+ 
+    NGAP_PDUSessionResourceNotifyIEs_t *ie = NULL; //kassem
+    NGAP_RAN_UE_NGAP_ID_t *RAN_UE_NGAP_ID = NULL; //kassem
+    NGAP_AMF_UE_NGAP_ID_t *AMF_UE_NGAP_ID = NULL; //kassem
+    NGAP_PDUSessionResourceNotifyList_t *PDUSessionList = NULL; //kassem
+    NGAP_PDUSessionResourceNotifyItem_t *PDUSessionItem = NULL; //kassem
+    OCTET_STRING_t *transfer = NULL; //kassem
+ 
+    ogs_assert(gnb); //kassem
+    ogs_assert(gnb->sctp.sock); //kassem
+    ogs_assert(message); //kassem
+ 
+    initiatingMessage = message->choice.initiatingMessage; //kassem
+    ogs_assert(initiatingMessage); //kassem
+    PDUSessionResourceNotify = //kassem
+        &initiatingMessage->value.choice.PDUSessionResourceNotify; //kassem
+    ogs_assert(PDUSessionResourceNotify); //kassem
+ 
+    ogs_debug("PDUSessionResourceNotify"); //kassem
+ 
+    /* Walk the IEs to extract RAN/AMF UE IDs and the notify list */ //kassem
+    for (i = 0; //kassem
+         i < PDUSessionResourceNotify->protocolIEs.list.count; i++) { //kassem
+        ie = PDUSessionResourceNotify->protocolIEs.list.array[i]; //kassem
+        switch (ie->id) { //kassem
+        case NGAP_ProtocolIE_ID_id_RAN_UE_NGAP_ID: //kassem
+            RAN_UE_NGAP_ID = &ie->value.choice.RAN_UE_NGAP_ID; //kassem
+            break; //kassem
+        case NGAP_ProtocolIE_ID_id_AMF_UE_NGAP_ID: //kassem
+            AMF_UE_NGAP_ID = &ie->value.choice.AMF_UE_NGAP_ID; //kassem
+            break; //kassem
+        case NGAP_ProtocolIE_ID_id_PDUSessionResourceNotifyList: //kassem
+            PDUSessionList = //kassem
+                &ie->value.choice.PDUSessionResourceNotifyList; //kassem
+            break; //kassem
+        default: //kassem
+            break; //kassem
+        } //kassem
+    } //kassem
+ 
+    ogs_debug("    IP[%s] RAN_ID[%d]", //kassem
+            OGS_ADDR(gnb->sctp.addr, buf), gnb->gnb_id); //kassem
+ 
+    /* Validate AMF_UE_NGAP_ID */ //kassem
+    if (!AMF_UE_NGAP_ID) { //kassem
+        ogs_error("[QNC] No AMF_UE_NGAP_ID"); //kassem
+        r = ngap_send_error_indication(gnb, (uint64_t *)RAN_UE_NGAP_ID, NULL, //kassem
+                NGAP_Cause_PR_protocol, NGAP_CauseProtocol_semantic_error); //kassem
+        ogs_expect(r == OGS_OK); //kassem
+        ogs_assert(r != OGS_ERROR); //kassem
+        return; //kassem
+    } //kassem
+ 
+    if (asn_INTEGER2uint64(AMF_UE_NGAP_ID, &amf_ue_ngap_id) != 0) { //kassem
+        ogs_error("[QNC] Invalid AMF_UE_NGAP_ID"); //kassem
+        r = ngap_send_error_indication(gnb, (uint64_t *)RAN_UE_NGAP_ID, NULL, //kassem
+                NGAP_Cause_PR_protocol, NGAP_CauseProtocol_semantic_error); //kassem
+        ogs_expect(r == OGS_OK); //kassem
+        ogs_assert(r != OGS_ERROR); //kassem
+        return; //kassem
+    } //kassem
+ 
+    ran_ue = ran_ue_find_by_amf_ue_ngap_id(amf_ue_ngap_id); //kassem
+    if (!ran_ue) { //kassem
+        ogs_error("[QNC] No RAN UE Context : AMF_UE_NGAP_ID[%lld]", //kassem
+                (long long)amf_ue_ngap_id); //kassem
+        r = ngap_send_error_indication( //kassem
+                gnb, (uint64_t *)RAN_UE_NGAP_ID, &amf_ue_ngap_id, //kassem
+                NGAP_Cause_PR_radioNetwork, //kassem
+                NGAP_CauseRadioNetwork_unknown_local_UE_NGAP_ID); //kassem
+        ogs_expect(r == OGS_OK); //kassem
+        ogs_assert(r != OGS_ERROR); //kassem
+        return; //kassem
+    } //kassem
+ 
+    amf_ue = amf_ue_find_by_id(ran_ue->amf_ue_id); //kassem
+    if (!amf_ue) { //kassem
+        ogs_error("[QNC] Cannot find AMF-UE Context [%lld]", //kassem
+                (long long)amf_ue_ngap_id); //kassem
+        r = ngap_send_error_indication( //kassem
+                gnb, &ran_ue->ran_ue_ngap_id, &ran_ue->amf_ue_ngap_id, //kassem
+                NGAP_Cause_PR_radioNetwork, //kassem
+                NGAP_CauseRadioNetwork_unknown_local_UE_NGAP_ID); //kassem
+        ogs_expect(r == OGS_OK); //kassem
+        ogs_assert(r != OGS_ERROR); //kassem
+        return; //kassem
+    } //kassem
+ 
+    if (!PDUSessionList) { //kassem
+        ogs_error("[QNC] No PDUSessionResourceNotifyList"); //kassem
+        r = ngap_send_error_indication2(ran_ue, //kassem
+                NGAP_Cause_PR_protocol, NGAP_CauseProtocol_semantic_error); //kassem
+        ogs_expect(r == OGS_OK); //kassem
+        ogs_assert(r != OGS_ERROR); //kassem
+        return; //kassem
+    } //kassem
+ 
+    /* Forward each notified PDU session to the SMF */ //kassem
+    for (i = 0; i < PDUSessionList->list.count; i++) { //kassem
+        amf_sess_t *sess = NULL; //kassem
+        PDUSessionItem = (NGAP_PDUSessionResourceNotifyItem_t *) //kassem
+            PDUSessionList->list.array[i]; //kassem
+ 
+        if (!PDUSessionItem) { //kassem
+            ogs_error("[QNC] No PDUSessionResourceNotifyItem"); //kassem
+            r = ngap_send_error_indication2(ran_ue, //kassem
+                    NGAP_Cause_PR_protocol, //kassem
+                    NGAP_CauseProtocol_semantic_error); //kassem
+            ogs_expect(r == OGS_OK); //kassem
+            ogs_assert(r != OGS_ERROR); //kassem
+            return; //kassem
+        } //kassem
+ 
+        transfer = //kassem
+            &PDUSessionItem->pDUSessionResourceNotifyTransfer; //kassem
+        if (!transfer) { //kassem
+            ogs_error("[QNC] No pDUSessionResourceNotifyTransfer"); //kassem
+            r = ngap_send_error_indication2(ran_ue, //kassem
+                    NGAP_Cause_PR_protocol, //kassem
+                    NGAP_CauseProtocol_semantic_error); //kassem
+            ogs_expect(r == OGS_OK); //kassem
+            ogs_assert(r != OGS_ERROR); //kassem
+            return; //kassem
+        } //kassem
+ 
+        if (PDUSessionItem->pDUSessionID == //kassem
+                OGS_NAS_PDU_SESSION_IDENTITY_UNASSIGNED) { //kassem
+            ogs_error("[QNC] PDU Session Identity is unassigned"); //kassem
+            r = ngap_send_error_indication2(ran_ue, //kassem
+                    NGAP_Cause_PR_protocol, //kassem
+                    NGAP_CauseProtocol_semantic_error); //kassem
+            ogs_expect(r == OGS_OK); //kassem
+            ogs_assert(r != OGS_ERROR); //kassem
+            return; //kassem
+        } //kassem
+ 
+        sess = amf_sess_find_by_psi(amf_ue, PDUSessionItem->pDUSessionID); //kassem
+        if (!sess) { //kassem
+            ogs_error("[QNC] Cannot find PDU Session ID [%d]", //kassem
+                    (int)PDUSessionItem->pDUSessionID); //kassem
+            r = ngap_send_error_indication2(ran_ue, //kassem
+                    NGAP_Cause_PR_radioNetwork, //kassem
+                    NGAP_CauseRadioNetwork_unknown_PDU_session_ID); //kassem
+            ogs_expect(r == OGS_OK); //kassem
+            ogs_assert(r != OGS_ERROR); //kassem
+            return; //kassem
+        } //kassem
+ 
+        if (!SESSION_CONTEXT_IN_SMF(sess)) { //kassem
+            ogs_error("[QNC] Session Context is not in SMF [%d]", //kassem
+                    (int)PDUSessionItem->pDUSessionID); //kassem
+            r = ngap_send_error_indication2(ran_ue, //kassem
+                    NGAP_Cause_PR_radioNetwork, //kassem
+                    NGAP_CauseRadioNetwork_unknown_PDU_session_ID); //kassem
+            ogs_expect(r == OGS_OK); //kassem
+            ogs_assert(r != OGS_ERROR); //kassem
+            return; //kassem
+        } //kassem
+ 
+        /* Build UpdateSMContext request with the raw notify transfer bytes */ //kassem
+        memset(&param, 0, sizeof(param)); //kassem
+        param.n2smbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN); //kassem
+        ogs_assert(param.n2smbuf); //kassem
+        param.n2SmInfoType = OpenAPI_n2_sm_info_type_PDU_RES_NTY; //kassem
+        ogs_pkbuf_put_data(param.n2smbuf, transfer->buf, transfer->size); //kassem
+ 
+        ogs_info("[QNC] Forwarding PDUSessionResourceNotify to SMF " //kassem
+                 "UE[%s] PSI[%d]", amf_ue->supi, //kassem
+                 (int)PDUSessionItem->pDUSessionID); //kassem
+ 
+        r = amf_sess_sbi_discover_and_send( //kassem
+                OGS_SBI_SERVICE_TYPE_NSMF_PDUSESSION, NULL, //kassem
+                amf_nsmf_pdusession_build_update_sm_context, //kassem
+                ran_ue, sess, AMF_UPDATE_SM_CONTEXT_MODIFIED, &param); //kassem
+        ogs_expect(r == OGS_OK); //kassem
+        ogs_assert(r != OGS_ERROR); //kassem
+ 
+        ogs_pkbuf_free(param.n2smbuf); //kassem
+    } //kassem
+} //kassem

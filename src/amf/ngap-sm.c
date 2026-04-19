@@ -124,6 +124,9 @@ void ngap_state_operational(ogs_fsm_t *s, amf_event_t *e)
             case NGAP_ProcedureCode_id_ErrorIndication:
                 ngap_handle_error_indication(gnb, pdu);
                 break;
+            case NGAP_ProcedureCode_id_PDUSessionResourceNotify: //kassem
+                ngap_handle_pdu_session_resource_notify(gnb, pdu); //kassem
+            break; //kassem
             default:
                 ogs_error("Not implemented(choice:%d, proc:%d)",
                         pdu->present, (int)initiatingMessage->procedureCode);
