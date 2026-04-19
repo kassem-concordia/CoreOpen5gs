@@ -1810,7 +1810,17 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
                 ogs_assert_if_reached();
             END
             break;
-
+        CASE(OGS_SBI_SERVICE_NAME_NPCF_SMPOLICYCONTROL) //kassem
+            /* kassem: Handle PCF response to Npcf_SMPolicyControl_Update
+             * (QNC_NOTIF). Just call our handler and break — no fatal. */
+            if (e->h.sbi.state == SMF_UPDATE_STATE_QNC_NOTIF) { //kassem
+                smf_npcf_smpolicycontrol_handle_update( //kassem
+                        sess, NULL, sbi_message); //kassem
+            } else { //kassem
+                ogs_warn("[%s:%d] [QNC] Unexpected NPCF state [%d]", //kassem
+                        smf_ue->supi, sess->psi, e->h.sbi.state); //kassem
+            } //kassem
+            break; //kassem
         DEFAULT
             ogs_error("[%s:%d] Invalid API name [%s]",
                     smf_ue->supi, sess->psi, sbi_message->h.service.name);
