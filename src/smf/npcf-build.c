@@ -466,12 +466,11 @@ ogs_sbi_request_t *smf_npcf_smpolicycontrol_build_update( //kassem
         smf_sess_t *sess, void *data) //kassem
 { //kassem
     smf_ue_t *smf_ue = NULL; //kassem
-    smf_npcf_smpolicycontrol_param_t *param = data; //kassem
  
     ogs_sbi_message_t message; //kassem
     ogs_sbi_request_t *request = NULL; //kassem
  
-    OpenAPI_sm_policy_update_context_data_t SmPolicyUpdateContextData; //kassem
+    OpenAPI_sm_policy_context_data_t SmPolicyContextData; //kassem
     OpenAPI_list_t *PolicyCtrlReqTriggers = NULL; //kassem
  
     ogs_assert(sess); //kassem
@@ -489,34 +488,24 @@ ogs_sbi_request_t *smf_npcf_smpolicycontrol_build_update( //kassem
         goto end; //kassem
     } //kassem
  
-    memset(&SmPolicyUpdateContextData, 0, //kassem
-            sizeof(SmPolicyUpdateContextData)); //kassem
+    memset(&SmPolicyContextData, 0, sizeof(SmPolicyContextData)); //kassem
  
-    /* Add QNC_NOTIF trigger */ //kassem
+    /* Add QOS_NOTIF trigger (QNC notification per TS 29.512) */ //kassem
     PolicyCtrlReqTriggers = OpenAPI_list_create(); //kassem
     if (!PolicyCtrlReqTriggers) { //kassem
         ogs_error("No PolicyCtrlReqTriggers"); //kassem
         goto end; //kassem
     } //kassem
     OpenAPI_list_add(PolicyCtrlReqTriggers, //kassem
-        (void *)OpenAPI_policy_control_request_trigger_QNC_NOTIF); //kassem
+        (void *)OpenAPI_policy_control_request_trigger_QOS_NOTIF); //kassem
  
-    SmPolicyUpdateContextData.policy_ctrl_req_triggers = //kassem
-        PolicyCtrlReqTriggers; //kassem
- 
-    /* Add serving network */ //kassem
-    SmPolicyUpdateContextData.serving_network = //kassem
-        ogs_sbi_build_plmn_id_nid(&sess->serving_plmn_id); //kassem
-    if (!SmPolicyUpdateContextData.serving_network) { //kassem
-        ogs_error("No serving_network"); //kassem
-        goto end; //kassem
-    } //kassem
+    SmPolicyContextData.policy_ctrl_req_triggers = PolicyCtrlReqTriggers; //kassem
  
     ogs_info("[QNC] Sending Npcf_SMPolicyControl_Update " //kassem
-             "supi[%s] psi[%d] trigger=QNC_NOTIF", //kassem
+             "supi[%s] psi[%d] trigger=QOS_NOTIF", //kassem
              smf_ue->supi, sess->psi); //kassem
  
-    message.SmPolicyUpdateContextData = &SmPolicyUpdateContextData; //kassem
+    message.SmPolicyContextData = &SmPolicyContextData; //kassem
  
     request = ogs_sbi_build_request(&message); //kassem
     ogs_expect(request); //kassem
@@ -524,9 +513,6 @@ ogs_sbi_request_t *smf_npcf_smpolicycontrol_build_update( //kassem
 end: //kassem
     if (message.h.uri) //kassem
         ogs_free(message.h.uri); //kassem
-    if (SmPolicyUpdateContextData.serving_network) //kassem
-        ogs_sbi_free_plmn_id_nid( //kassem
-            SmPolicyUpdateContextData.serving_network); //kassem
     if (PolicyCtrlReqTriggers) //kassem
         OpenAPI_list_free(PolicyCtrlReqTriggers); //kassem
  
