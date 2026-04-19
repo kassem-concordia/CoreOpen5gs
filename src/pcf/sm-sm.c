@@ -99,7 +99,16 @@ void pcf_sm_state_operational(ogs_fsm_t *s, pcf_event_t *e)
                         OGS_FSM_TRAN(s, pcf_sm_state_exception);
                     }
                     break;
-
+                CASE(OGS_SBI_RESOURCE_NAME_UPDATE) //kassem
+                    /* kassem: Receive Npcf_SMPolicyControl_Update from SMF.
+                     * For QNC notifications we just acknowledge with 204. */
+                    ogs_info("[QNC] PCF received SMPolicyControl Update "
+                             "supi[%s] psi[%d]", //kassem
+                             pcf_ue_sm->supi, sess->psi); //kassem
+                    ogs_assert(true == //kassem
+                        ogs_sbi_send_http_status_no_content(stream)); //kassem
+                    handled = true; //kassem
+                    break; //kassem
                 DEFAULT
                     ogs_error("[%s:%d] Invalid HTTP URI [%s]",
                             pcf_ue_sm->supi, sess->psi, message->h.uri);
