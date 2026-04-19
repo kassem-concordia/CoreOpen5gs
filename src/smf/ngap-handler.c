@@ -1001,6 +1001,18 @@ int ngap_handle_pdu_session_resource_notify_transfer( //kassem
     /* Acknowledge the notification - 204 No Content */ //kassem
     ogs_assert(true == ogs_sbi_send_http_status_no_content(stream)); //kassem
 
+    if (PCF_SM_POLICY_ASSOCIATED(sess)) { //kassem
+        int r = smf_sbi_discover_and_send( //kassem
+                OGS_SBI_SERVICE_TYPE_NPCF_SMPOLICYCONTROL, NULL, //kassem
+                smf_npcf_smpolicycontrol_build_update, //kassem
+                sess, NULL, SMF_UPDATE_STATE_QNC_NOTIF, NULL); //kassem
+        ogs_expect(r == OGS_OK); //kassem
+        ogs_assert(r != OGS_ERROR); //kassem
+    } else { //kassem
+        ogs_warn("[QNC] No PCF association for supi[%s] psi[%d]", //kassem
+                smf_ue->supi, sess->psi); //kassem
+    } //kassem
+    
     ogs_asn_free( //kassem
             &asn_DEF_NGAP_PDUSessionResourceNotifyTransfer, &message); //kassem
 

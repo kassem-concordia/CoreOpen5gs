@@ -74,6 +74,8 @@ bool smf_sbi_send_request(
     (SMF_UPDATE_STATE_BASE + 0x06U)  /* 0x06 */
 #define SMF_UPDATE_STATE_UE_REQ_MOD                 \
     (SMF_UPDATE_STATE_BASE + 0x07U)  /* 0x07 */
+#define SMF_UPDATE_STATE_QNC_NOTIF                  \
+    (SMF_UPDATE_STATE_BASE + 0x08U)  /* 0x08 */ //kassem
 
 /* Base offset for SMF_REMOVE states */
 #define SMF_REMOVE_STATE_BASE       0x30U           /* REMOVE at 0x30 */

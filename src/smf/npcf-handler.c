@@ -979,3 +979,52 @@ bool smf_npcf_smpolicycontrol_handle_terminate_notify(
 
     return true;
 }
+
+
+
+bool smf_npcf_smpolicycontrol_handle_update( //kassem
+        smf_sess_t *sess, ogs_sbi_stream_t *stream, //kassem
+        ogs_sbi_message_t *recvmsg) //kassem
+{ //kassem
+    smf_ue_t *smf_ue = NULL; //kassem
+    char *strerror = NULL; //kassem
+    OpenAPI_sm_policy_decision_t *SmPolicyDecision = NULL; //kassem
+ 
+    ogs_assert(sess); //kassem
+    ogs_assert(recvmsg); //kassem
+    smf_ue = smf_ue_find_by_id(sess->smf_ue_id); //kassem
+    ogs_assert(smf_ue); //kassem
+ 
+    ogs_info("[QNC] Npcf_SMPolicyControl_Update response " //kassem
+             "supi[%s] psi[%d] status[%d]", //kassem
+             smf_ue->supi, sess->psi, recvmsg->res_status); //kassem
+ 
+    if (recvmsg->res_status == OGS_SBI_HTTP_STATUS_NO_CONTENT) { //kassem
+        /* PCF acknowledged with 204 - no policy change */ //kassem
+        ogs_info("[QNC] PCF acknowledged notification (204)"); //kassem
+        return true; //kassem
+    } //kassem
+ 
+    if (recvmsg->res_status != OGS_SBI_HTTP_STATUS_OK) { //kassem
+        strerror = ogs_msprintf("[%s:%d] PCF update failed [%d]", //kassem
+                smf_ue->supi, sess->psi, recvmsg->res_status); //kassem
+        ogs_error("%s", strerror); //kassem
+        ogs_free(strerror); //kassem
+        return false; //kassem
+    } //kassem
+ 
+    SmPolicyDecision = recvmsg->SmPolicyDecision; //kassem
+    if (!SmPolicyDecision) { //kassem
+        ogs_info("[QNC] PCF returned 200 but no SmPolicyDecision"); //kassem
+        return true; //kassem
+    } //kassem
+ 
+    /* Apply updated PCC rules and QoS from PCF */ //kassem
+    update_authorized_pcc_rule_and_qos(sess, SmPolicyDecision); //kassem
+    smf_qos_flow_binding(sess); //kassem
+ 
+    ogs_info("[QNC] PCF policy update applied for supi[%s] psi[%d]", //kassem
+             smf_ue->supi, sess->psi); //kassem
+ 
+    return true; //kassem
+} //kassem

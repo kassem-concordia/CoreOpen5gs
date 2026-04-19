@@ -2077,7 +2077,7 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
                 OGS_FSM_TRAN(s, smf_gsm_state_exception);
             }
             break;
-            
+
         case OpenAPI_n2_sm_info_type_PDU_RES_NTY: //kassem
             rv = ngap_handle_pdu_session_resource_notify_transfer( //kassem
                     sess, stream, pkbuf); //kassem
@@ -2680,6 +2680,12 @@ void smf_gsm_state_wait_pfcp_deletion(ogs_fsm_t *s, smf_event_t *e)
 
         SWITCH(sbi_message->h.service.name)
         CASE(OGS_SBI_SERVICE_NAME_NPCF_SMPOLICYCONTROL)
+            /* kassem: handle QNC_NOTIF PCF update response */
+            if (e->h.sbi.state == SMF_UPDATE_STATE_QNC_NOTIF) { //kassem
+                smf_npcf_smpolicycontrol_handle_update( //kassem
+                        sess, NULL, sbi_message); //kassem
+                break; //kassem
+            } //kassem
             ogs_pkbuf_t *n1smbuf = NULL;
 
             stream_id = OGS_POINTER_TO_UINT(e->h.sbi.data);

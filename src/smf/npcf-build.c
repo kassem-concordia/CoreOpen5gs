@@ -460,3 +460,75 @@ end:
 
     return request;
 }
+
+
+ogs_sbi_request_t *smf_npcf_smpolicycontrol_build_update( //kassem
+        smf_sess_t *sess, void *data) //kassem
+{ //kassem
+    smf_ue_t *smf_ue = NULL; //kassem
+    smf_npcf_smpolicycontrol_param_t *param = data; //kassem
+ 
+    ogs_sbi_message_t message; //kassem
+    ogs_sbi_request_t *request = NULL; //kassem
+ 
+    OpenAPI_sm_policy_update_context_data_t SmPolicyUpdateContextData; //kassem
+    OpenAPI_list_t *PolicyCtrlReqTriggers = NULL; //kassem
+ 
+    ogs_assert(sess); //kassem
+    ogs_assert(sess->policy_association.resource_uri); //kassem
+    smf_ue = smf_ue_find_by_id(sess->smf_ue_id); //kassem
+    ogs_assert(smf_ue); //kassem
+ 
+    memset(&message, 0, sizeof(message)); //kassem
+    message.h.method = (char *)OGS_SBI_HTTP_METHOD_POST; //kassem
+    message.h.uri = ogs_msprintf("%s/%s", //kassem
+            sess->policy_association.resource_uri, //kassem
+            OGS_SBI_RESOURCE_NAME_UPDATE); //kassem
+    if (!message.h.uri) { //kassem
+        ogs_error("No message.h.uri"); //kassem
+        goto end; //kassem
+    } //kassem
+ 
+    memset(&SmPolicyUpdateContextData, 0, //kassem
+            sizeof(SmPolicyUpdateContextData)); //kassem
+ 
+    /* Add QNC_NOTIF trigger */ //kassem
+    PolicyCtrlReqTriggers = OpenAPI_list_create(); //kassem
+    if (!PolicyCtrlReqTriggers) { //kassem
+        ogs_error("No PolicyCtrlReqTriggers"); //kassem
+        goto end; //kassem
+    } //kassem
+    OpenAPI_list_add(PolicyCtrlReqTriggers, //kassem
+        (void *)OpenAPI_policy_control_request_trigger_QNC_NOTIF); //kassem
+ 
+    SmPolicyUpdateContextData.policy_ctrl_req_triggers = //kassem
+        PolicyCtrlReqTriggers; //kassem
+ 
+    /* Add serving network */ //kassem
+    SmPolicyUpdateContextData.serving_network = //kassem
+        ogs_sbi_build_plmn_id_nid(&sess->serving_plmn_id); //kassem
+    if (!SmPolicyUpdateContextData.serving_network) { //kassem
+        ogs_error("No serving_network"); //kassem
+        goto end; //kassem
+    } //kassem
+ 
+    ogs_info("[QNC] Sending Npcf_SMPolicyControl_Update " //kassem
+             "supi[%s] psi[%d] trigger=QNC_NOTIF", //kassem
+             smf_ue->supi, sess->psi); //kassem
+ 
+    message.SmPolicyUpdateContextData = &SmPolicyUpdateContextData; //kassem
+ 
+    request = ogs_sbi_build_request(&message); //kassem
+    ogs_expect(request); //kassem
+ 
+end: //kassem
+    if (message.h.uri) //kassem
+        ogs_free(message.h.uri); //kassem
+    if (SmPolicyUpdateContextData.serving_network) //kassem
+        ogs_sbi_free_plmn_id_nid( //kassem
+            SmPolicyUpdateContextData.serving_network); //kassem
+    if (PolicyCtrlReqTriggers) //kassem
+        OpenAPI_list_free(PolicyCtrlReqTriggers); //kassem
+ 
+    return request; //kassem
+} //kassem
