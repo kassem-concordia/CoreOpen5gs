@@ -948,3 +948,61 @@ cleanup:
     ogs_asn_free(&asn_DEF_NGAP_HandoverRequestAcknowledgeTransfer, &message);
     return rv;
 }
+
+
+int ngap_handle_pdu_session_resource_notify_transfer( //kassem
+        smf_sess_t *sess, ogs_sbi_stream_t *stream, ogs_pkbuf_t *pkbuf) //kassem
+{ //kassem
+    smf_ue_t *smf_ue = NULL; //kassem
+    int rv, i; //kassem
+
+    NGAP_PDUSessionResourceNotifyTransfer_t message; //kassem
+    NGAP_QosFlowNotifyList_t *qosFlowNotifyList = NULL; //kassem
+
+    ogs_assert(pkbuf); //kassem
+    ogs_assert(stream); //kassem
+    ogs_assert(sess); //kassem
+
+    smf_ue = smf_ue_find_by_id(sess->smf_ue_id); //kassem
+    ogs_assert(smf_ue); //kassem
+
+    ogs_info("[QNC] PDUSessionResourceNotifyTransfer received " //kassem
+             "supi[%s] psi[%d]", smf_ue->supi, sess->psi); //kassem
+
+    rv = ogs_asn_decode( //kassem
+            &asn_DEF_NGAP_PDUSessionResourceNotifyTransfer, //kassem
+            &message, sizeof(message), pkbuf); //kassem
+    if (rv != OGS_OK) { //kassem
+        ogs_error("[%s:%d] Cannot decode PDUSessionResourceNotifyTransfer", //kassem
+                smf_ue->supi, sess->psi); //kassem
+        smf_sbi_send_sm_context_update_error_log( //kassem
+                stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST, //kassem
+                "Cannot decode PDUSessionResourceNotifyTransfer", //kassem
+                smf_ue->supi); //kassem
+        return OGS_ERROR; //kassem
+    } //kassem
+
+    qosFlowNotifyList = message.qosFlowNotifyList; //kassem
+    if (qosFlowNotifyList) { //kassem
+        for (i = 0; i < qosFlowNotifyList->list.count; i++) { //kassem
+            NGAP_QosFlowNotifyItem_t *item = //kassem
+                (NGAP_QosFlowNotifyItem_t *) //kassem
+                    qosFlowNotifyList->list.array[i]; //kassem
+            if (!item) continue; //kassem
+            ogs_info("[QNC] supi[%s] psi[%d] QFI[%d] cause[%s]", //kassem
+                    smf_ue->supi, sess->psi, //kassem
+                    (int)item->qosFlowIdentifier, //kassem
+                    item->notificationCause == //kassem
+                        NGAP_NotificationCause_fulfilled ? //kassem
+                        "fulfilled" : "not-fulfilled"); //kassem
+        } //kassem
+    } //kassem
+
+    /* Acknowledge the notification - 204 No Content */ //kassem
+    ogs_assert(true == ogs_sbi_send_http_status_no_content(stream)); //kassem
+
+    ogs_asn_free( //kassem
+            &asn_DEF_NGAP_PDUSessionResourceNotifyTransfer, &message); //kassem
+
+    return OGS_OK; //kassem
+} //kassem

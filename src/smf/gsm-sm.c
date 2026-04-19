@@ -2077,6 +2077,16 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
                 OGS_FSM_TRAN(s, smf_gsm_state_exception);
             }
             break;
+            
+        case OpenAPI_n2_sm_info_type_PDU_RES_NTY: //kassem
+            rv = ngap_handle_pdu_session_resource_notify_transfer( //kassem
+                    sess, stream, pkbuf); //kassem
+            if (rv != OGS_OK) { //kassem
+                ogs_error("[%s:%d] Cannot handle NGAP notify message", //kassem
+                        smf_ue->supi, sess->psi); //kassem
+                OGS_FSM_TRAN(s, smf_gsm_state_exception); //kassem
+            } //kassem
+            break; //kassem
 
         default:
             ogs_error("Unknown message[%d]", e->ngap.type);
